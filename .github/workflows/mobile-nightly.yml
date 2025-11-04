@@ -120,7 +120,7 @@ jobs:
 
       - name: Create Google Services file
         working-directory: android/app
-        run: echo '${{ secrets.ANDROID_GOOGLE_SERVICES_JSON }}' > google-services.json
+        run: echo '${{ secrets.ANDROID_GOOGLE_SERVICES_JSON_BASE64 }}' | base64 --decode > google-services.json
 
       - name: Create Keystore
         working-directory: android/app

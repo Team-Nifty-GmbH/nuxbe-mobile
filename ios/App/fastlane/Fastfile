@@ -7,6 +7,20 @@ platform :ios do
   lane :build do
     setup_ci if ENV['CI']
 
+    app_identifier = ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe"
+    prod_profile = ENV['PROVISIONING_PROFILE_SPECIFIER']
+
+    export_opts = {
+      method: "app-store",
+      signingStyle: "manual"
+    }
+
+    if prod_profile && !prod_profile.empty?
+      export_opts[:provisioningProfiles] = {
+        app_identifier => prod_profile
+      }
+    end
+
     gym(
       scheme: "App",
       workspace: "App.xcworkspace",
@@ -14,11 +28,7 @@ platform :ios do
       clean: true,
       output_directory: "./build",
       output_name: "nuxbe-mobile.ipa",
-      export_options: {
-        provisioningProfiles: {
-          ENV['APP_IDENTIFIER'] => ENV['PROVISIONING_PROFILE_SPECIFIER']
-        }
-      }
+      export_options: export_opts
     )
   end
 
@@ -26,10 +36,24 @@ platform :ios do
   lane :beta do
     setup_ci if ENV['CI']
 
+    app_identifier = ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe"
+    prod_profile = ENV['PROVISIONING_PROFILE_SPECIFIER']
+
     # Increment build number
     increment_build_number(
       xcodeproj: "App.xcodeproj"
     )
+
+    export_opts = {
+      method: "app-store",
+      signingStyle: "manual"
+    }
+
+    if prod_profile && !prod_profile.empty?
+      export_opts[:provisioningProfiles] = {
+        app_identifier => prod_profile
+      }
+    end
 
     # Build the app
     gym(
@@ -39,11 +63,7 @@ platform :ios do
       clean: true,
       output_directory: "./build",
       output_name: "nuxbe-mobile.ipa",
-      export_options: {
-        provisioningProfiles: {
-          ENV['APP_IDENTIFIER'] => ENV['PROVISIONING_PROFILE_SPECIFIER']
-        }
-      }
+      export_options: export_opts
     )
 
     # Upload to TestFlight
@@ -69,6 +89,20 @@ platform :ios do
   lane :build_development do
     setup_ci if ENV['CI']
 
+    app_identifier = ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe"
+    dev_profile = ENV['DEV_PROVISIONING_PROFILE_SPECIFIER']
+
+    export_opts = {
+      method: "development",
+      signingStyle: "manual"
+    }
+
+    if dev_profile && !dev_profile.empty?
+      export_opts[:provisioningProfiles] = {
+        app_identifier => dev_profile
+      }
+    end
+
     gym(
       scheme: "App",
       workspace: "App.xcworkspace",
@@ -76,11 +110,7 @@ platform :ios do
       clean: true,
       output_directory: "./build",
       output_name: "nuxbe-mobile-dev.ipa",
-      export_options: {
-        provisioningProfiles: {
-          ENV['APP_IDENTIFIER'] => ENV['DEV_PROVISIONING_PROFILE_SPECIFIER']
-        }
-      }
+      export_options: export_opts
     )
   end
 
