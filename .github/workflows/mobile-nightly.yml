@@ -41,7 +41,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Create Google Services file
-        working-directory: ios/App/App
+        working-directory: ios/App
         run: echo '${{ secrets.IOS_GOOGLE_SERVICES_PLIST }}' > GoogleService-Info.plist
 
       - name: Import Code Signing Certificates
