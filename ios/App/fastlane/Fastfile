@@ -24,9 +24,6 @@ platform :ios do
     xcargs = []
     xcargs << "DEVELOPMENT_TEAM=YS428GD6FU"
     xcargs << "CODE_SIGN_IDENTITY='iPhone Distribution'"
-    if prod_profile && !prod_profile.empty?
-      xcargs << "PROVISIONING_PROFILE_SPECIFIER='#{prod_profile}'"
-    end
 
     gym(
       scheme: "App",
@@ -66,9 +63,6 @@ platform :ios do
     xcargs = []
     xcargs << "DEVELOPMENT_TEAM=YS428GD6FU"
     xcargs << "CODE_SIGN_IDENTITY='iPhone Distribution'"
-    if prod_profile && !prod_profile.empty?
-      xcargs << "PROVISIONING_PROFILE_SPECIFIER='#{prod_profile}'"
-    end
 
     # Build the app
     gym(
@@ -122,9 +116,6 @@ platform :ios do
     xcargs = []
     xcargs << "DEVELOPMENT_TEAM=YS428GD6FU"
     xcargs << "CODE_SIGN_IDENTITY='iPhone Developer'"
-    if dev_profile && !dev_profile.empty?
-      xcargs << "PROVISIONING_PROFILE_SPECIFIER='#{dev_profile}'"
-    end
 
     gym(
       scheme: "App",
