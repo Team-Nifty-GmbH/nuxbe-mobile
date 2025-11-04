@@ -31,9 +31,6 @@ const config: CapacitorConfig = {
     Camera: {
       saveToGallery: false
     },
-    Geolocation: {
-      requestPermissions: true
-    },
     StatusBar: {
       style: 'dark',
       backgroundColor: '#ffffff'
