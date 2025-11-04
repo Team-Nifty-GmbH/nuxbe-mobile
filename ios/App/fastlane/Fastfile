@@ -126,6 +126,7 @@ platform :ios do
     gym(
       scheme: "App",
       workspace: "App.xcworkspace",
+      configuration: "Debug",
       export_method: "development",
       clean: true,
       output_directory: "./build",
