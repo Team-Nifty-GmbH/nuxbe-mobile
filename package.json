@@ -1,6 +1,6 @@
 {
   "name": "nuxbe-mobile",
-  "version": "1.0.0",
+  "version": "1.0.8-beta",
   "description": "Nuxbe Mobile - Native iOS & Android wrapper for Flux ERP PWA",
   "main": "index.html",
   "scripts": {
