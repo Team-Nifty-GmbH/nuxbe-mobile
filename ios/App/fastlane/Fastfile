@@ -1,0 +1,116 @@
+# Fastfile for Nuxbe Mobile iOS App
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build production IPA without uploading"
+  lane :build do
+    setup_ci if ENV['CI']
+
+    gym(
+      scheme: "App",
+      workspace: "App.xcworkspace",
+      export_method: "app-store",
+      clean: true,
+      output_directory: "./build",
+      output_name: "nuxbe-mobile.ipa",
+      export_options: {
+        provisioningProfiles: {
+          ENV['APP_IDENTIFIER'] => ENV['PROVISIONING_PROFILE_SPECIFIER']
+        }
+      }
+    )
+  end
+
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    setup_ci if ENV['CI']
+
+    # Increment build number
+    increment_build_number(
+      xcodeproj: "App.xcodeproj"
+    )
+
+    # Build the app
+    gym(
+      scheme: "App",
+      workspace: "App.xcworkspace",
+      export_method: "app-store",
+      clean: true,
+      output_directory: "./build",
+      output_name: "nuxbe-mobile.ipa",
+      export_options: {
+        provisioningProfiles: {
+          ENV['APP_IDENTIFIER'] => ENV['PROVISIONING_PROFILE_SPECIFIER']
+        }
+      }
+    )
+
+    # Upload to TestFlight
+    api_key = app_store_connect_api_key(
+      key_id: ENV['APP_STORE_CONNECT_API_KEY_ID'],
+      issuer_id: ENV['APP_STORE_CONNECT_ISSUER_ID'],
+      key_content: ENV['APP_STORE_CONNECT_API_KEY_CONTENT'],
+      is_key_content_base64: true,
+      duration: 1200,
+      in_house: false
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      skip_submission: true,
+      distribute_external: false,
+      notify_external_testers: false
+    )
+  end
+
+  desc "Build development IPA for nightly builds"
+  lane :build_development do
+    setup_ci if ENV['CI']
+
+    gym(
+      scheme: "App",
+      workspace: "App.xcworkspace",
+      export_method: "development",
+      clean: true,
+      output_directory: "./build",
+      output_name: "nuxbe-mobile-dev.ipa",
+      export_options: {
+        provisioningProfiles: {
+          ENV['APP_IDENTIFIER'] => ENV['DEV_PROVISIONING_PROFILE_SPECIFIER']
+        }
+      }
+    )
+  end
+
+  desc "Download provisioning profiles"
+  lane :sync_profiles do
+    match(
+      type: "appstore",
+      readonly: true
+    )
+
+    match(
+      type: "development",
+      readonly: true
+    )
+  end
+
+  desc "Register new device"
+  lane :register_device do |options|
+    device_name = options[:name]
+    device_udid = options[:udid]
+
+    register_devices(
+      devices: {
+        device_name => device_udid
+      }
+    )
+
+    match(
+      type: "development",
+      force_for_new_devices: true
+    )
+  end
+end

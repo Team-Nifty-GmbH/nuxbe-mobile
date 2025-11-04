@@ -1,0 +1,38 @@
+{
+  "app": {
+    "name": "Nuxbe"
+  },
+  "setup": {
+    "title": "Connect to your Nuxbe ERP Server",
+    "serverUrl": "Server URL",
+    "serverUrlPlaceholder": "https://my-server.com",
+    "connect": "Connect",
+    "or": "or",
+    "scanQr": "Scan QR Code",
+    "connected": "Connected:",
+    "helpText": "Ask your administrator for the QR code or server URL.",
+    "qrScannerNativeOnly": "QR code scanner is only available in the native app",
+    "qrScanFailed": "QR code scanning failed",
+    "errors": {
+      "emptyUrl": "Please enter a server URL",
+      "invalidUrl": "Invalid URL. Format: https://my-server.com",
+      "connectionFailed": "Could not connect to server. Please check the URL and try again.",
+      "healthCheckFailed": "Server responded but health check failed. Please contact your administrator.",
+      "serverNotReachable": "Server not reachable. Please check the URL."
+    }
+  },
+  "loading": {
+    "connectingToServer": "Connecting to server...",
+    "openingServer": "Opening {name}...",
+    "cancel": "Cancel",
+    "timeout": "Connection timeout",
+    "timeoutMessage": "The connection is taking too long. Please check your internet connection and try again.",
+    "retry": "Retry",
+    "connectionFailedTitle": "Connection failed",
+    "connectionFailedMessage": "The server could not be reached. Please check your internet connection and try again.",
+    "backToServerSelection": "Back to server selection"
+  },
+  "navigation": {
+    "navigatingTo": "Navigating to server: {url}"
+  }
+}

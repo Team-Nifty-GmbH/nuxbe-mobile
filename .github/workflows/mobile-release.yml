@@ -1,0 +1,197 @@
+name: Mobile App Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'mobile-v*.*.*'
+
+jobs:
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: packages/nuxbe-mobile/package-lock.json
+
+      - name: Install dependencies
+        working-directory: packages/nuxbe-mobile
+        run: npm ci
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: packages/nuxbe-mobile/ios/App
+
+      - name: Install Fastlane
+        working-directory: packages/nuxbe-mobile/ios/App
+        run: bundle install
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Create Google Services file
+        working-directory: packages/nuxbe-mobile/ios/App/App
+        run: echo '${{ secrets.IOS_GOOGLE_SERVICES_PLIST }}' > GoogleService-Info.plist
+
+      - name: Import Code Signing Certificates
+        uses: apple-actions/import-codesign-certs@v2
+        with:
+          p12-file-base64: ${{ secrets.IOS_DISTRIBUTION_CERT_P12 }}
+          p12-password: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
+
+      - name: Download Provisioning Profiles
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo '${{ secrets.IOS_PROVISION_PROFILE }}' | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/nuxbe_mobile.mobileprovision
+
+      - name: Build iOS app
+        working-directory: packages/nuxbe-mobile
+        run: npm run build:ios
+
+      - name: Sync Capacitor
+        working-directory: packages/nuxbe-mobile
+        run: npm run sync:ios
+
+      - name: Build with Fastlane
+        working-directory: packages/nuxbe-mobile/ios/App
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          FASTLANE_USER: ${{ secrets.FASTLANE_USER }}
+          FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
+        run: |
+          if [[ "${{ github.ref }}" == *"alpha"* ]] || [[ "${{ github.ref }}" == *"beta"* ]] || [[ "${{ github.ref }}" == *"rc"* ]]; then
+            echo "Pre-release detected - uploading to TestFlight"
+            bundle exec fastlane beta
+          else
+            echo "Production release - building archive only"
+            bundle exec fastlane build
+          fi
+
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app
+          path: packages/nuxbe-mobile/ios/App/build/*.ipa
+          retention-days: 30
+
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: packages/nuxbe-mobile/package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        working-directory: packages/nuxbe-mobile
+        run: npm ci
+
+      - name: Create Google Services file
+        working-directory: packages/nuxbe-mobile/android/app
+        run: echo '${{ secrets.ANDROID_GOOGLE_SERVICES_JSON }}' > google-services.json
+
+      - name: Create Keystore
+        working-directory: packages/nuxbe-mobile/android/app
+        run: echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' | base64 --decode > release.keystore
+
+      - name: Create keystore.properties
+        working-directory: packages/nuxbe-mobile/android
+        run: |
+          cat > keystore.properties << EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=release.keystore
+          EOF
+
+      - name: Build Android app
+        working-directory: packages/nuxbe-mobile
+        run: npm run build:android
+
+      - name: Sync Capacitor
+        working-directory: packages/nuxbe-mobile
+        run: npm run sync:android
+
+      - name: Build AAB and APK
+        working-directory: packages/nuxbe-mobile/android
+        run: |
+          ./gradlew bundleRelease
+          ./gradlew assembleRelease
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: packages/nuxbe-mobile/android/app/build/outputs/bundle/release/*.aab
+          retention-days: 30
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: packages/nuxbe-mobile/android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
+
+  create-release:
+    name: Create GitHub Release
+    needs: [build-ios, build-android]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download iOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-app
+          path: artifacts/ios
+
+      - name: Download Android AAB
+        uses: actions/download-artifact@v4
+        with:
+          name: android-aab
+          path: artifacts/android
+
+      - name: Download Android APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: artifacts/android
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/ios/*.ipa
+            artifacts/android/*.aab
+            artifacts/android/*.apk
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+          generate_release_notes: true

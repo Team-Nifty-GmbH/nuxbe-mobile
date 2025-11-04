@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Nuxbe</string>
+    <string name="title_activity_main">Nuxbe</string>
+    <string name="package_name">com.teamnifty.nuxbe</string>
+    <string name="custom_url_scheme">com.teamnifty.nuxbe</string>
+</resources>

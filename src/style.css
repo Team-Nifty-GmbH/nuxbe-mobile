@@ -1,0 +1,330 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary-color: #64748b;
+    --error-color: #ef4444;
+    --success-color: #10b981;
+    --bg-color: #ffffff;
+    --text-color: #1f2937;
+    --border-color: #e5e7eb;
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #111827;
+        --text-color: #f9fafb;
+        --border-color: #374151;
+    }
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.screen {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.logo h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: var(--secondary-color);
+    font-size: 0.95rem;
+}
+
+.setup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+input[type="url"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: border-color 0.2s;
+}
+
+input[type="url"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+input[type="url"].error {
+    border-color: var(--error-color);
+}
+
+.error-message {
+    font-size: 0.875rem;
+    color: var(--error-color);
+    display: none;
+}
+
+.error-message.show {
+    display: block;
+}
+
+.btn {
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 0.5rem 0;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.divider span {
+    padding: 0 0.75rem;
+    color: var(--secondary-color);
+    font-size: 0.875rem;
+}
+
+.help-text {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.help-text p {
+    font-size: 0.875rem;
+    color: var(--secondary-color);
+}
+
+.icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.loader {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.loading-content p {
+    color: var(--secondary-color);
+    text-align: center;
+}
+
+/* WebView Container */
+#webview-container {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+}
+
+#server-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+/* Server History */
+.server-history {
+    margin-bottom: 1.5rem;
+}
+
+.server-history-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--secondary-color);
+    margin-bottom: 0.75rem;
+}
+
+.server-history-item-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.server-history-item {
+    flex: 1;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.server-history-item:hover {
+    background-color: rgba(99, 102, 241, 0.05);
+    border-color: var(--primary-color);
+}
+
+.server-history-item:active {
+    transform: scale(0.98);
+}
+
+.server-url {
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chevron-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    color: var(--secondary-color);
+    transition: transform 0.2s;
+}
+
+.server-history-item:hover .chevron-icon {
+    transform: translateX(4px);
+    color: var(--primary-color);
+}
+
+.server-delete-btn {
+    padding: 0.875rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background-color: var(--bg-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.server-delete-btn:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+}
+
+.server-delete-btn:active {
+    transform: scale(0.95);
+}
+
+.delete-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--secondary-color);
+    transition: color 0.2s;
+}
+
+.server-delete-btn:hover .delete-icon {
+    color: #ef4444;
+}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Nuxbe</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="screen">
+        <div class="container">
+            <div class="logo">
+                <svg
+                    class="logo-icon"
+                    viewBox="0 0 351 377"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style="width: 80px; height: 80px; margin: 0 auto 1rem auto;"
+                >
+                    <path
+                        d="M204.853 276.557C195.935 267.64 191.477 257.98 191.477 244.604V132.396C191.477 119.02 195.935 109.36 204.853 100.443L304.428 0.867188L350.5 47.6824L209.311 188.128L350.5 329.317L304.428 376.133L204.853 276.557ZM0.5 329.317L141.689 188.128L0.5 47.6824L46.5722 0.867188L146.148 100.443C155.065 109.36 159.523 119.02 159.523 132.396V244.604C159.523 257.98 155.065 267.64 146.148 276.557L46.5722 376.133L0.5 329.317Z"
+                        fill="currentColor"
+                    />
+                </svg>
+                <p class="subtitle" data-i18n="setup.title">Connect to your Nuxbe ERP Server</p>
+            </div>
+
+            <div class="setup-form">
+                <!-- Server History -->
+                <div id="server-history" class="server-history" style="display: none;"></div>
+
+                <div class="input-group">
+                    <label for="server-url" data-i18n="setup.serverUrl">Server URL</label>
+                    <input
+                        type="url"
+                        id="server-url"
+                        data-i18n-placeholder="setup.serverUrlPlaceholder"
+                        placeholder="https://my-server.com"
+                        autocomplete="url"
+                        autocapitalize="none"
+                    >
+                    <span class="error-message" id="url-error"></span>
+                </div>
+
+                <button id="connect-btn" class="btn btn-primary">
+                    <span class="btn-text" data-i18n="setup.connect">Connect</span>
+                    <span class="loader" style="display: none;"></span>
+                </button>
+
+                <div class="divider">
+                    <span data-i18n="setup.or">or</span>
+                </div>
+
+                <button id="scan-qr-btn" class="btn btn-secondary">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                    </svg>
+                    <span data-i18n="setup.scanQr">Scan QR Code</span>
+                </button>
+            </div>
+
+            <div class="help-text">
+                <p data-i18n="setup.helpText">Ask your administrator for the QR code or server URL.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- WebView Container (not used, navigation happens via window.location.href) -->
+    <div id="webview-container" class="screen" style="display: none;">
+        <p>Navigating to server...</p>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="screen" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loading-text" data-i18n="loading.connectingToServer">Connecting to server...</p>
+            <button id="cancel-loading-btn" class="btn btn-secondary" style="margin-top: 2rem;" data-i18n="loading.cancel">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <script type="module" src="/src/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "name": "nuxbe-mobile",
+  "version": "1.0.0",
+  "description": "Nuxbe Mobile - Native iOS & Android wrapper for Flux ERP PWA",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:ios": "npm run build && npx cap sync ios",
+    "build:android": "npm run build && npx cap sync android",
+    "preview": "vite preview",
+    "sync": "npx cap sync",
+    "sync:ios": "npx cap sync ios",
+    "sync:android": "npx cap sync android",
+    "open:ios": "npx cap open ios",
+    "open:android": "npx cap open android",
+    "add:ios": "npx cap add ios",
+    "add:android": "npx cap add android",
+    "generate:icons": "node scripts/generate-icons.mjs"
+  },
+  "keywords": [
+    "capacitor",
+    "mobile",
+    "ios",
+    "android",
+    "flux-erp"
+  ],
+  "author": "Team Nifty GmbH",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.1.0",
+    "@capacitor/barcode-scanner": "^2.2.0",
+    "@capacitor/camera": "^7.0.2",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/device": "^7.0.2",
+    "@capacitor/filesystem": "^7.0.0",
+    "@capacitor/geolocation": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
+    "@capacitor/preferences": "^7.0.2",
+    "@capacitor/push-notifications": "^7.0.3",
+    "@capacitor/share": "^7.0.0",
+    "@capacitor/splash-screen": "^7.0.3",
+    "@capacitor/status-bar": "^7.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0",
+    "sharp": "^0.34.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.0.0"
+  }
+}
