@@ -74,6 +74,8 @@ jobs:
         working-directory: ios/App
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          DEV_PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.DEV_PROVISIONING_PROFILE_SPECIFIER }}
         run: bundle exec fastlane build_development
 
       - name: Rename IPA with date
