@@ -63,11 +63,11 @@ jobs:
           echo "Build number set to: $BUILD_NUMBER"
 
       - name: Build iOS app
-        working-directory: packages/nuxbe-mobile
+        working-directory: .
         run: npm run build:ios
 
       - name: Sync Capacitor
-        working-directory: packages/nuxbe-mobile
+        working-directory: .
         run: npm run sync:ios
 
       - name: Build IPA
@@ -113,7 +113,7 @@ jobs:
           java-version: '17'
 
       - name: Install dependencies
-        working-directory: packages/nuxbe-mobile
+        working-directory: .
         run: npm ci
 
       - name: Create Google Services file
@@ -132,11 +132,11 @@ jobs:
           echo "Version code set to: $VERSION_CODE"
 
       - name: Build Android app
-        working-directory: packages/nuxbe-mobile
+        working-directory: .
         run: npm run build:android
 
       - name: Sync Capacitor
-        working-directory: packages/nuxbe-mobile
+        working-directory: .
         run: npm run sync:android
 
       - name: Build APK

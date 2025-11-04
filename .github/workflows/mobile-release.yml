@@ -23,7 +23,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: packages/nuxbe-mobile
+        working-directory: .
         run: npm ci
 
       - name: Setup Ruby
@@ -58,11 +58,11 @@ jobs:
           echo '${{ secrets.IOS_PROVISION_PROFILE }}' | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/nuxbe_mobile.mobileprovision
 
       - name: Build iOS app
-        working-directory: packages/nuxbe-mobile
+        working-directory: .
         run: npm run build:ios
 
       - name: Sync Capacitor
-        working-directory: packages/nuxbe-mobile
+        working-directory: .
         run: npm run sync:ios
 
       - name: Build with Fastlane
@@ -110,7 +110,7 @@ jobs:
           java-version: '17'
 
       - name: Install dependencies
-        working-directory: packages/nuxbe-mobile
+        working-directory: .
         run: npm ci
 
       - name: Create Google Services file
@@ -132,11 +132,11 @@ jobs:
           EOF
 
       - name: Build Android app
-        working-directory: packages/nuxbe-mobile
+        working-directory: .
         run: npm run build:android
 
       - name: Sync Capacitor
-        working-directory: packages/nuxbe-mobile
+        working-directory: .
         run: npm run sync:android
 
       - name: Build AAB and APK
