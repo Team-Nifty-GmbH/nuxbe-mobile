@@ -54,10 +54,6 @@ jobs:
         run: |
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo '${{ secrets.IOS_DEVELOPMENT_PROVISION_PROFILE }}' | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/nuxbe_mobile_dev.mobileprovision
-          echo "Installed provisioning profiles:"
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
-          echo "Profile name from plist:"
-          /usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< $(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/nuxbe_mobile_dev.mobileprovision)
 
       - name: Increment Build Number
         working-directory: ios/App/App
@@ -124,21 +120,11 @@ jobs:
 
       - name: Create Google Services file
         working-directory: android/app
-        run: |
-          echo '${{ secrets.ANDROID_GOOGLE_SERVICES_JSON_BASE64 }}' | base64 --decode > google-services.json
-          echo "Google Services JSON file size: $(wc -c < google-services.json) bytes"
-          echo "First 100 chars: $(head -c 100 google-services.json)"
+        run: echo '${{ secrets.ANDROID_GOOGLE_SERVICES_JSON_BASE64 }}' | base64 --decode > google-services.json
 
       - name: Create Keystore
         working-directory: android/app
         run: echo '${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}' | base64 --decode > debug.keystore
-
-      - name: Increment Version Code
-        working-directory: android/app
-        run: |
-          VERSION_CODE=$(date +%Y%m%d%H%M)
-          sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" build.gradle
-          echo "Version code set to: $VERSION_CODE"
 
       - name: Build Android app
         working-directory: .
@@ -150,7 +136,7 @@ jobs:
 
       - name: Build APK
         working-directory: android
-        run: ./gradlew assembleDebug --stacktrace --info
+        run: ./gradlew assembleDebug
 
       - name: Rename APK with date
         working-directory: android/app/build/outputs/apk/debug
