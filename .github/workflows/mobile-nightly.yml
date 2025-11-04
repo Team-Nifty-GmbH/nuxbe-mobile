@@ -150,7 +150,7 @@ jobs:
 
       - name: Build APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --stacktrace --info
 
       - name: Rename APK with date
         working-directory: android/app/build/outputs/apk/debug
