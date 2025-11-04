@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: packages/nuxbe-mobile/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         working-directory: packages/nuxbe-mobile
@@ -31,10 +31,10 @@ jobs:
         with:
           ruby-version: '3.2'
           bundler-cache: true
-          working-directory: packages/nuxbe-mobile/ios/App
+          working-directory: ios/App
 
       - name: Install Fastlane
-        working-directory: packages/nuxbe-mobile/ios/App
+        working-directory: ios/App
         run: bundle install
 
       - name: Setup Xcode
@@ -43,7 +43,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Create Google Services file
-        working-directory: packages/nuxbe-mobile/ios/App/App
+        working-directory: ios/App/App
         run: echo '${{ secrets.IOS_GOOGLE_SERVICES_PLIST }}' > GoogleService-Info.plist
 
       - name: Import Code Signing Certificates
@@ -66,7 +66,7 @@ jobs:
         run: npm run sync:ios
 
       - name: Build with Fastlane
-        working-directory: packages/nuxbe-mobile/ios/App
+        working-directory: ios/App
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           FASTLANE_USER: ${{ secrets.FASTLANE_USER }}
@@ -85,7 +85,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-app
-          path: packages/nuxbe-mobile/ios/App/build/*.ipa
+          path: ios/App/build/*.ipa
           retention-days: 30
 
   build-android:
@@ -101,7 +101,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: packages/nuxbe-mobile/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -114,15 +114,15 @@ jobs:
         run: npm ci
 
       - name: Create Google Services file
-        working-directory: packages/nuxbe-mobile/android/app
+        working-directory: android/app
         run: echo '${{ secrets.ANDROID_GOOGLE_SERVICES_JSON }}' > google-services.json
 
       - name: Create Keystore
-        working-directory: packages/nuxbe-mobile/android/app
+        working-directory: android/app
         run: echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' | base64 --decode > release.keystore
 
       - name: Create keystore.properties
-        working-directory: packages/nuxbe-mobile/android
+        working-directory: android
         run: |
           cat > keystore.properties << EOF
           storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -140,7 +140,7 @@ jobs:
         run: npm run sync:android
 
       - name: Build AAB and APK
-        working-directory: packages/nuxbe-mobile/android
+        working-directory: android
         run: |
           ./gradlew bundleRelease
           ./gradlew assembleRelease
@@ -149,14 +149,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-aab
-          path: packages/nuxbe-mobile/android/app/build/outputs/bundle/release/*.aab
+          path: android/app/build/outputs/bundle/release/*.aab
           retention-days: 30
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: packages/nuxbe-mobile/android/app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
   create-release:

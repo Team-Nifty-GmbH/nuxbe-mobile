@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'packages/nuxbe-mobile/**'
-      - '.github/workflows/mobile-nightly.yml'
   workflow_dispatch:
 
 jobs:
@@ -23,10 +20,8 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: packages/nuxbe-mobile/package-lock.json
 
       - name: Install dependencies
-        working-directory: packages/nuxbe-mobile
         run: npm ci
 
       - name: Setup Ruby
@@ -34,10 +29,10 @@ jobs:
         with:
           ruby-version: '3.2'
           bundler-cache: true
-          working-directory: packages/nuxbe-mobile/ios/App
+          working-directory: ios/App
 
       - name: Install Fastlane
-        working-directory: packages/nuxbe-mobile/ios/App
+        working-directory: ios/App
         run: bundle install
 
       - name: Setup Xcode
@@ -46,7 +41,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Create Google Services file
-        working-directory: packages/nuxbe-mobile/ios/App/App
+        working-directory: ios/App/App
         run: echo '${{ secrets.IOS_GOOGLE_SERVICES_PLIST }}' > GoogleService-Info.plist
 
       - name: Import Code Signing Certificates
@@ -61,7 +56,7 @@ jobs:
           echo '${{ secrets.IOS_DEVELOPMENT_PROVISION_PROFILE }}' | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/nuxbe_mobile_dev.mobileprovision
 
       - name: Increment Build Number
-        working-directory: packages/nuxbe-mobile/ios/App/App
+        working-directory: ios/App/App
         run: |
           BUILD_NUMBER=$(date +%Y%m%d%H%M)
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" Info.plist
@@ -76,13 +71,13 @@ jobs:
         run: npm run sync:ios
 
       - name: Build IPA
-        working-directory: packages/nuxbe-mobile/ios/App
+        working-directory: ios/App
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         run: bundle exec fastlane build_development
 
       - name: Rename IPA with date
-        working-directory: packages/nuxbe-mobile/ios/App/build
+        working-directory: ios/App/build
         run: |
           DATE=$(date +%Y-%m-%d)
           for file in *.ipa; do
@@ -93,7 +88,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-nightly-${{ github.run_number }}
-          path: packages/nuxbe-mobile/ios/App/build/*.ipa
+          path: ios/App/build/*.ipa
           retention-days: 7
 
   build-android:
@@ -109,7 +104,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: packages/nuxbe-mobile/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -122,15 +117,15 @@ jobs:
         run: npm ci
 
       - name: Create Google Services file
-        working-directory: packages/nuxbe-mobile/android/app
+        working-directory: android/app
         run: echo '${{ secrets.ANDROID_GOOGLE_SERVICES_JSON }}' > google-services.json
 
       - name: Create Keystore
-        working-directory: packages/nuxbe-mobile/android/app
+        working-directory: android/app
         run: echo '${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}' | base64 --decode > debug.keystore
 
       - name: Increment Version Code
-        working-directory: packages/nuxbe-mobile/android/app
+        working-directory: android/app
         run: |
           VERSION_CODE=$(date +%Y%m%d%H%M)
           sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" build.gradle
@@ -145,11 +140,11 @@ jobs:
         run: npm run sync:android
 
       - name: Build APK
-        working-directory: packages/nuxbe-mobile/android
+        working-directory: android
         run: ./gradlew assembleDebug
 
       - name: Rename APK with date
-        working-directory: packages/nuxbe-mobile/android/app/build/outputs/apk/debug
+        working-directory: android/app/build/outputs/apk/debug
         run: |
           DATE=$(date +%Y-%m-%d)
           for file in *.apk; do
@@ -160,7 +155,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-nightly-${{ github.run_number }}
-          path: packages/nuxbe-mobile/android/app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/debug/*.apk
           retention-days: 7
 
   notify:
