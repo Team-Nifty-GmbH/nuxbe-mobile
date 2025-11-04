@@ -24,7 +24,7 @@ platform :ios do
     xcargs = []
     xcargs << "DEVELOPMENT_TEAM=YS428GD6FU"
     if prod_profile && !prod_profile.empty?
-      xcargs << "PROVISIONING_PROFILE_SPECIFIER=#{prod_profile}"
+      xcargs << "PROVISIONING_PROFILE_SPECIFIER='#{prod_profile}'"
     end
 
     gym(
@@ -65,7 +65,7 @@ platform :ios do
     xcargs = []
     xcargs << "DEVELOPMENT_TEAM=YS428GD6FU"
     if prod_profile && !prod_profile.empty?
-      xcargs << "PROVISIONING_PROFILE_SPECIFIER=#{prod_profile}"
+      xcargs << "PROVISIONING_PROFILE_SPECIFIER='#{prod_profile}'"
     end
 
     # Build the app
@@ -120,7 +120,7 @@ platform :ios do
     xcargs = []
     xcargs << "DEVELOPMENT_TEAM=YS428GD6FU"
     if dev_profile && !dev_profile.empty?
-      xcargs << "PROVISIONING_PROFILE_SPECIFIER=#{dev_profile}"
+      xcargs << "PROVISIONING_PROFILE_SPECIFIER='#{dev_profile}'"
     end
 
     gym(
