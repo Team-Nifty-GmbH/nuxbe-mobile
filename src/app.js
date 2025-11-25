@@ -37,13 +37,62 @@ class NuxbeApp {
         return platform === 'android' ? 'http://localhost' : 'capacitor://localhost';
     }
 
+    /**
+     * Update status bar style and color based on current color scheme
+     */
+    async updateStatusBarForColorScheme() {
+        // Check for Tailwind dark class on html or body, or fall back to system preference
+        const isDarkMode = document.documentElement.classList.contains('dark') ||
+                          document.body.classList.contains('dark') ||
+                          window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        try {
+            if (isDarkMode) {
+                // Dark mode: dark background (slate-800), light icons
+                await StatusBar.setStyle({ style: Style.Dark });
+                await StatusBar.setBackgroundColor({ color: '#1e293b' });
+            } else {
+                // Light mode: light background, dark icons
+                await StatusBar.setStyle({ style: Style.Light });
+                await StatusBar.setBackgroundColor({ color: '#ffffff' });
+            }
+        } catch (error) {
+            console.error('[STATUS BAR] Failed to update:', error);
+        }
+    }
+
+    /**
+     * Watch for dark mode class changes on html/body
+     */
+    setupDarkModeObserver() {
+        const observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.attributeName === 'class') {
+                    this.updateStatusBarForColorScheme();
+                }
+            }
+        });
+
+        // Watch both html and body for class changes
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    }
+
     async init() {
         updateUI();
 
         if (this.isNative) {
             try {
                 await StatusBar.setOverlaysWebView({ overlay: false });
-                await StatusBar.setStyle({ style: Style.Light });
+                await this.updateStatusBarForColorScheme();
+
+                // Listen for system color scheme changes
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                    this.updateStatusBarForColorScheme();
+                });
+
+                // Watch for Tailwind dark class changes
+                this.setupDarkModeObserver();
             } catch (error) {
                 console.error('[STATUS BAR] Configuration failed:', error);
             }
@@ -320,6 +369,10 @@ class NuxbeApp {
 
             // Enable pull-to-refresh
             this.enablePullToRefresh();
+
+            // Setup dark mode observer for status bar
+            this.setupDarkModeObserver();
+            await this.updateStatusBarForColorScheme();
 
             // Note: Push notifications werden bereits in init() initialisiert
 
@@ -630,6 +683,30 @@ class NuxbeApp {
 
         // App Version
         window.nativeBridge.getVersion = () => APP_VERSION;
+
+        // Set dark mode - can be called by the server
+        window.nativeBridge.setDarkMode = async (isDark) => {
+            try {
+                if (isDark) {
+                    await StatusBar.setStyle({ style: Style.Dark });
+                    await StatusBar.setBackgroundColor({ color: '#1e293b' });
+                } else {
+                    await StatusBar.setStyle({ style: Style.Light });
+                    await StatusBar.setBackgroundColor({ color: '#ffffff' });
+                }
+                return { success: true };
+            } catch (error) {
+                console.error('Set dark mode failed:', error);
+                return { success: false, error: error.message };
+            }
+        };
+
+        // Auto-detect dark mode from DOM and update status bar
+        window.nativeBridge.updateStatusBarFromDOM = async () => {
+            const isDark = document.documentElement.classList.contains('dark') ||
+                          document.body.classList.contains('dark');
+            return window.nativeBridge.setDarkMode(isDark);
+        };
     }
 
     async showSetupScreen() {
@@ -721,9 +798,8 @@ class NuxbeApp {
             finalDeepLinkPath = deepLinkTarget;
         }
 
-        // Show loading screen with app name or server URL as fallback
-        const displayName = this.appName || this.serverUrl;
-        this.showLoading(t('loading.openingServer', { name: displayName }));
+        // Don't show loading screen - keep splash visible until navigation completes
+        // This prevents any flash of HTML content
 
         // Always navigate to login-mobile endpoint
         // This ensures proper session handling and redirect functionality
@@ -762,13 +838,14 @@ class NuxbeApp {
             targetUrl = `${targetUrl}?${params.toString()}`;
         }
 
-        // Hide splash screen before showing iframe
+        // Set timeout to show error if navigation takes too long
+        this.setLoadingTimeout(targetUrl);
+
+        // Hide splash screen and immediately navigate
+        // The navigation happens so fast the user won't see the blank page
         if (this.isNative) {
             await SplashScreen.hide();
         }
-
-        // Set timeout to show error if navigation takes too long
-        this.setLoadingTimeout(targetUrl);
 
         // Navigate to server - Capacitor bridge will be loaded by nuxbe-bridge.js
         window.location.href = targetUrl;
