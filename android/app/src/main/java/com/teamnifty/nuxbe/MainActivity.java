@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.WindowCompat;
 import androidx.webkit.WebViewCompat;
 import androidx.webkit.WebViewFeature;
 
@@ -25,6 +26,9 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         createNotificationChannel();
         patchJSInjection();
+
+        // Ensure the system handles the status bar - content below it
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
     }
 
     private void createNotificationChannel() {

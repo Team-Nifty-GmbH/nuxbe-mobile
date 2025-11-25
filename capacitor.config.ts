@@ -32,8 +32,9 @@ const config: CapacitorConfig = {
       saveToGallery: false
     },
     StatusBar: {
-      style: 'dark',
-      backgroundColor: '#ffffff'
+      style: 'LIGHT',
+      backgroundColor: '#ffffff',
+      overlaysWebView: false
     }
   }
 };
