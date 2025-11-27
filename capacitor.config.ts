@@ -12,7 +12,7 @@ const config: CapacitorConfig = {
   },
     appendUserAgent: 'Nuxbe-Mobile/1.0.0 (Capacitor)',
   ios: {
-    contentInset: 'automatic'
+    contentInset: 'never'
   },
   plugins: {
     SplashScreen: {
@@ -33,7 +33,6 @@ const config: CapacitorConfig = {
     },
     StatusBar: {
       style: 'LIGHT',
-      backgroundColor: '#ffffff',
       overlaysWebView: false
     }
   }
