@@ -300,9 +300,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activesupport (~> 7.0)
-  cocoapods (~> 1.16)
-  fastlane (~> 2.226)
+  cocoapods (~> 1.15)
+  fastlane (~> 2.220)
 
 BUNDLED WITH
    2.7.2
