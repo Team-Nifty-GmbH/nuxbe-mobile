@@ -5,7 +5,7 @@
 # - 13" iPad screenshots (2064x2752) -> iPad Pro 13-inch (M4)
 # All other device sizes are auto-scaled by App Store Connect.
 devices([
-  "iPhone 16 Pro Max",
+  "iPhone 17 Pro Max",
   "iPad Pro 13-inch (M4)"
 ])
 
