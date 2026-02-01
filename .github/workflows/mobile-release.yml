@@ -7,6 +7,77 @@ on:
       - 'mobile-v*.*.*'
 
 jobs:
+  screenshots-ios:
+    name: Generate iOS Screenshots
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        working-directory: .
+        run: npm ci
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios/App
+
+      - name: Install Fastlane
+        working-directory: ios/App
+        run: bundle install
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Create Google Services file
+        working-directory: ios/App
+        run: echo '${{ secrets.IOS_GOOGLE_SERVICES_PLIST }}' > GoogleService-Info.plist
+
+      - name: Build iOS app
+        working-directory: .
+        run: npm run build:ios
+
+      - name: Sync Capacitor
+        working-directory: .
+        run: npm run sync:ios
+
+      - name: Install CocoaPods
+        working-directory: ios/App
+        run: pod install
+
+      - name: Generate Screenshots
+        working-directory: ios/App
+        run: bundle exec fastlane screenshots
+
+      - name: Upload Screenshots to App Store Connect
+        working-directory: ios/App
+        env:
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: bundle exec fastlane upload_screenshots
+
+      - name: Upload Screenshots Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-screenshots
+          path: ios/App/fastlane/screenshots
+          retention-days: 90
+
   build-ios:
     name: Build iOS
     runs-on: macos-latest
@@ -162,7 +233,7 @@ jobs:
 
   create-release:
     name: Create GitHub Release
-    needs: [build-ios, build-android]
+    needs: [build-ios, build-android, screenshots-ios]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -186,6 +257,17 @@ jobs:
           name: android-apk
           path: artifacts/android
 
+      - name: Download iOS Screenshots
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-screenshots
+          path: artifacts/screenshots
+
+      - name: Create Screenshots Archive
+        run: |
+          cd artifacts/screenshots
+          zip -r ../ios-screenshots.zip .
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -193,6 +275,7 @@ jobs:
             artifacts/ios/*.ipa
             artifacts/android/*.aab
             artifacts/android/*.apk
+            artifacts/ios-screenshots.zip
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
           generate_release_notes: true
