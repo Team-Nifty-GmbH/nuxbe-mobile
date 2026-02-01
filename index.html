@@ -83,6 +83,56 @@
         </div>
     </div>
 
+    <!-- Fallback screen shown when navigated back to this page (e.g. via swipe).
+         Hidden by JS on normal init. Visible by default so the user is never stuck on a blank page. -->
+    <div id="fallback-screen" class="screen">
+        <div class="container" style="text-align: center;">
+            <svg viewBox="0 0 351 377" fill="none" xmlns="http://www.w3.org/2000/svg"
+                 style="width: 60px; height: 60px; margin: 0 auto 1.5rem; color: var(--secondary-color);">
+                <path d="M204.853 276.557C195.935 267.64 191.477 257.98 191.477 244.604V132.396C191.477 119.02 195.935 109.36 204.853 100.443L304.428 0.867188L350.5 47.6824L209.311 188.128L350.5 329.317L304.428 376.133L204.853 276.557ZM0.5 329.317L141.689 188.128L0.5 47.6824L46.5722 0.867188L146.148 100.443C155.065 109.36 159.523 119.02 159.523 132.396V244.604C159.523 257.98 155.065 267.64 146.148 276.557L46.5722 376.133L0.5 329.317Z" fill="currentColor"/>
+            </svg>
+            <p style="color: var(--secondary-color); margin-bottom: 1.5rem;">Connection to server lost.</p>
+            <button class="btn btn-primary" style="width: 100%;" onclick="window.history.forward()">
+                <span>Go back</span>
+            </button>
+            <button class="btn btn-secondary" style="width: 100%; margin-top: 0.75rem;" onclick="sessionStorage.removeItem('nuxbe_was_active'); location.reload()">
+                <span>Reconnect</span>
+            </button>
+        </div>
+    </div>
+    <script>
+        (function() {
+            var fallback = document.getElementById('fallback-screen');
+            var isReturning = sessionStorage.getItem('nuxbe_was_active');
+
+            if (isReturning) {
+                // We previously navigated away — this is a swipe-back (fresh load).
+                // Keep fallback visible, hide everything else.
+                document.getElementById('setup-screen').style.display = 'none';
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('webview-container').style.display = 'none';
+            } else {
+                // Normal first load — hide fallback, let main JS handle screens.
+                fallback.style.display = 'none';
+            }
+
+            // Handle bfcache restoration (swipe-back restores cached page state).
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    fallback.style.display = '';
+                    document.getElementById('setup-screen').style.display = 'none';
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('webview-container').style.display = 'none';
+                }
+            });
+
+            // Mark that this page was active, so we can detect swipe-back on fresh load.
+            window.addEventListener('pagehide', function() {
+                sessionStorage.setItem('nuxbe_was_active', 'true');
+            });
+        })();
+    </script>
+
     <script type="module" src="/src/app.js"></script>
 </body>
 </html>
