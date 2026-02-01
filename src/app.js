@@ -848,7 +848,9 @@ class NuxbeApp {
         }
 
         // Navigate to server - Capacitor bridge will be loaded by nuxbe-bridge.js
-        window.location.href = targetUrl;
+        // Use replace() so the capacitor page is removed from the back-forward history,
+        // preventing swipe-back from landing on a dead local page.
+        window.location.replace(targetUrl);
     }
 
     showLoading(text = null) {
