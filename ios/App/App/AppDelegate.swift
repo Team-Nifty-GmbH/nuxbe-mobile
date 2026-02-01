@@ -25,14 +25,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
         // Capacitor macht das automatisch und registriert sich selbst.
         // Wenn wir das hier setzen, überschreiben wir Capacitor.
 
-        // Push Notifications registrieren
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            print("FCM: Permission granted: \(granted)")
-            if let error = error {
-                print("FCM: Error requesting authorization: \(error)")
+        // Check if notification permission should be disabled (for UI testing/screenshots)
+        // Check both environment variable and launch arguments for compatibility
+        let disableNotificationPermission = ProcessInfo.processInfo.environment["DISABLE_NOTIFICATION_PERMISSION"] == "1" ||
+                                            ProcessInfo.processInfo.arguments.contains("--disable-notification-permission")
+
+        if !disableNotificationPermission {
+            // Push Notifications registrieren
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                print("FCM: Permission granted: \(granted)")
+                if let error = error {
+                    print("FCM: Error requesting authorization: \(error)")
+                }
             }
+            application.registerForRemoteNotifications()
+        } else {
+            print("FCM: Notification permission request disabled via launch argument")
         }
-        application.registerForRemoteNotifications()
 
         // Override point for customization after application launch.
         return true

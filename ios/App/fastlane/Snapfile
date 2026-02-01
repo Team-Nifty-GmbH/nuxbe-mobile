@@ -1,0 +1,47 @@
+# Snapfile - Fastlane Snapshot Configuration
+
+# Apple App Store requires:
+# - 6.9" iPhone screenshots (1320x2868) -> iPhone 16 Pro Max
+# - 13" iPad screenshots (2064x2752) -> iPad Pro 13-inch (M4)
+# All other device sizes are auto-scaled by App Store Connect.
+devices([
+  "iPhone 16 Pro Max",
+  "iPad Pro 13-inch (M4)"
+])
+
+# Languages for screenshots
+languages([
+  "de-DE",
+  "en-US"
+])
+
+# Scheme to build
+scheme("AppUITests")
+
+# Workspace
+workspace("App.xcworkspace")
+
+# Output directory
+output_directory("./fastlane/screenshots")
+
+# Clear previous screenshots
+clear_previous_screenshots(true)
+
+# Override status bar
+override_status_bar(true)
+
+# Stop after first error
+stop_after_first_error(true)
+
+# Test without building (we build in the lane)
+test_without_building(false)
+
+# Concurrent simulators for speed
+concurrent_simulators(true)
+
+# Erase simulator before running tests to reset permissions state
+# This ensures a fresh start without any pending permission dialogs
+erase_simulator(true)
+
+# Dark mode screenshots (optional - uncomment if needed)
+# dark_mode(true)
