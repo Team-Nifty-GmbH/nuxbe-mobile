@@ -7,8 +7,8 @@ android {
         applicationId "com.teamnifty.nuxbe"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode project.hasProperty('appVersionCode') ? project.property('appVersionCode').toInteger() : 1
+        versionName project.hasProperty('appVersionName') ? project.property('appVersionName') : "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     aaptOptions {
