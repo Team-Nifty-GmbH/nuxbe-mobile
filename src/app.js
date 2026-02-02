@@ -716,6 +716,9 @@ class NuxbeApp {
 
         // Hide splash screen when setup screen is ready
         if (this.isNative) {
+            if (window.__screenshotMode) {
+                await new Promise(resolve => setTimeout(resolve, 5000));
+            }
             await SplashScreen.hide();
         }
 

@@ -203,7 +203,7 @@ platform :ios do
       workspace: "App.xcworkspace",
       scheme: "AppUITests",
       devices: [
-        "iPhone 17 Pro Max",
+        "iPhone 14 Plus",
         "iPad Pro 13-inch (M4)"
       ],
       languages: ["de-DE", "en-US"],

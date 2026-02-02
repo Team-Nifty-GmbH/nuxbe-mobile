@@ -1,11 +1,10 @@
 # Snapfile - Fastlane Snapshot Configuration
 
 # Apple App Store requires:
-# - 6.9" iPhone screenshots (1320x2868) -> iPhone 16 Pro Max
+# - 6.5" iPhone screenshots (1284x2778) -> iPhone 14 Plus
 # - 13" iPad screenshots (2064x2752) -> iPad Pro 13-inch (M4)
-# All other device sizes are auto-scaled by App Store Connect.
 devices([
-  "iPhone 17 Pro Max",
+  "iPhone 14 Plus",
   "iPad Pro 13-inch (M4)"
 ])
 
@@ -39,8 +38,7 @@ test_without_building(false)
 # Concurrent simulators for speed
 concurrent_simulators(true)
 
-# Erase simulator before running tests to reset permissions state
-# This ensures a fresh start without any pending permission dialogs
+# Erase simulator for clean status bars
 erase_simulator(true)
 
 # Dark mode screenshots (optional - uncomment if needed)
