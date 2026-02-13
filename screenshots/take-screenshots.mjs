@@ -14,9 +14,9 @@
  *   node screenshots/take-screenshots.mjs
  *
  * Environment variables:
- *   DEMO_SERVER_URL  - Server to screenshot (default: https://demo.nuxbe.com)
- *   DEMO_EMAIL       - Login email (optional, uses pre-filled demo credentials)
- *   DEMO_PASSWORD    - Login password (optional, uses pre-filled demo credentials)
+ *   DEMO_SERVER_URL  - Server to screenshot (default: http://127.0.0.1:8000)
+ *   DEMO_EMAIL       - Login email (default: demo@demo.com)
+ *   DEMO_PASSWORD    - Login password (default: demo)
  */
 
 import { chromium } from 'playwright';
@@ -29,9 +29,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const SCREENSHOT_DIR = path.join(ROOT, 'ios', 'App', 'fastlane', 'screenshots');
 
-const SERVER_URL = process.env.DEMO_SERVER_URL || 'https://demo.nuxbe.com';
-const DEMO_EMAIL = process.env.DEMO_EMAIL || '';
-const DEMO_PASSWORD = process.env.DEMO_PASSWORD || '';
+const SERVER_URL = process.env.DEMO_SERVER_URL || 'http://127.0.0.1:8000';
+const DEMO_EMAIL = process.env.DEMO_EMAIL || 'demo@demo.com';
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD || 'demo';
 const LOCAL_PORT = 4173;
 
 // Apple App Store required resolutions
@@ -113,20 +113,12 @@ async function login(page) {
     // Wait for the login form to appear
     await page.waitForSelector('input[type="email"], input[name="email"]', { timeout: 15000 });
 
-    // Fill credentials if provided (or if fields are empty)
+    // Fill credentials
     const emailField = page.locator('input[type="email"], input[name="email"]').first();
     const passwordField = page.locator('input[type="password"], input[name="password"]').first();
 
-    const currentEmail = await emailField.inputValue();
-    const currentPassword = await passwordField.inputValue();
-
-    if (!currentEmail && DEMO_EMAIL) {
-        await emailField.fill(DEMO_EMAIL);
-    }
-
-    if (!currentPassword && DEMO_PASSWORD) {
-        await passwordField.fill(DEMO_PASSWORD);
-    }
+    await emailField.fill(DEMO_EMAIL);
+    await passwordField.fill(DEMO_PASSWORD);
 
     // Click login button
     const loginButton = page.locator('button[type="submit"], button:has-text("Login"), button:has-text("Anmelden")').first();

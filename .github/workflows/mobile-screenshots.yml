@@ -3,6 +3,11 @@ name: Mobile App Screenshots
 on:
   workflow_dispatch:
 
+env:
+  SERVER_URL: http://127.0.0.1:8000
+  DB_DATABASE: nuxbe_screenshots
+  DB_USERNAME: root
+
 jobs:
   screenshots:
     name: Generate App Store Screenshots
@@ -12,14 +17,112 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: Team-Nifty-GmbH/demo-flux
+          token: ${{ secrets.GH_PACKAGES_TOKEN }}
+          path: backend
+
+      # --- Backend Setup ---
+      - name: Setup MySQL
+        run: |
+          sudo service mysql start || true
+          sleep 3
+          mysql -u root -e "CREATE DATABASE IF NOT EXISTS nuxbe_screenshots;"
+
+      - name: Start Meilisearch
+        run: |
+          meilisearch --master-key=masterKey --no-analytics &
+          sleep 3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
+      - name: Configure Composer auth
+        run: composer config --global --auth http-basic.packages.nuxbe.io token ${{ secrets.NUXBE_PACKAGES_TOKEN }}
+
+      - name: Add Nuxbe package repository
+        working-directory: backend
+        run: composer config repositories.nuxbe-packages composer https://packages.nuxbe.io/api/packages
+
+      - name: Install Composer dependencies
+        working-directory: backend
+        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-cache --ignore-platform-reqs
+
+      - name: Install NPM dependencies and build backend
+        working-directory: backend
+        run: |
+          npm ci --silent
+          npm run build
+
+      - name: Prepare environment
+        working-directory: backend
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: nuxbe_screenshots
+          DB_USERNAME: root
+          DB_PASSWORD:
+
+      - name: Run migrations and seed
+        working-directory: backend
+        run: |
+          php artisan migrate:fresh --force --no-interaction
+          php artisan storage:link
+          php artisan optimize:clear
+          php artisan init:demo --no-interaction
+        env:
+          CACHE_STORE: array
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: nuxbe_screenshots
+          DB_USERNAME: root
+          DB_PASSWORD:
+          SCOUT_DRIVER: meilisearch
+          MEILISEARCH_HOST: http://127.0.0.1:7700
+          MEILISEARCH_KEY: masterKey
+
+      - name: Start Laravel server
+        working-directory: backend
+        run: php artisan serve --host=0.0.0.0 --port=8000 &
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: nuxbe_screenshots
+          DB_USERNAME: root
+          DB_PASSWORD:
+          SCOUT_DRIVER: meilisearch
+          MEILISEARCH_HOST: http://127.0.0.1:7700
+          MEILISEARCH_KEY: masterKey
+
+      - name: Wait for server
+        run: |
+          for i in $(seq 1 30); do
+            if curl -s http://127.0.0.1:8000 > /dev/null 2>&1; then
+              echo "Server is ready"
+              break
+            fi
+            echo "Waiting for server... ($i)"
+            sleep 2
+          done
+
+      # --- Screenshots ---
+      - name: Install app dependencies
         run: npm ci
 
       - name: Install Playwright browser
@@ -31,9 +134,7 @@ jobs:
       - name: Generate Screenshots
         run: npm run screenshots
         env:
-          DEMO_SERVER_URL: ${{ secrets.DEMO_SERVER_URL }}
-          DEMO_EMAIL: ${{ secrets.DEMO_EMAIL }}
-          DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+          DEMO_SERVER_URL: http://127.0.0.1:8000
 
       - name: Upload Screenshots Artifact
         uses: actions/upload-artifact@v4
