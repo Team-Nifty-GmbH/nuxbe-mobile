@@ -42,34 +42,3 @@ jobs:
           name: app-screenshots
           path: ios/App/fastlane/screenshots
           retention-days: 90
-
-  upload:
-    name: Upload to App Store Connect
-    runs-on: [self-hosted, Linux]
-    needs: screenshots
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download screenshots
-        uses: actions/download-artifact@v4
-        with:
-          name: app-screenshots
-          path: ios/App/fastlane/screenshots
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          bundler-cache: true
-          working-directory: ios/App
-
-      - name: Upload Screenshots to App Store Connect
-        working-directory: ios/App
-        env:
-          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
-          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-        run: bundle exec fastlane upload_screenshots
