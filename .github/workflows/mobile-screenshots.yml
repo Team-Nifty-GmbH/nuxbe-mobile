@@ -21,7 +21,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Team-Nifty-GmbH/demo-flux
-          token: ${{ secrets.GH_PACKAGES_TOKEN }}
           path: backend
 
       # --- Backend Setup ---
@@ -46,13 +45,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
-      - name: Configure Composer auth
-        run: composer config --global --auth http-basic.packages.nuxbe.io token ${{ secrets.NUXBE_PACKAGES_TOKEN }}
-
-      - name: Add Nuxbe package repository
-        working-directory: backend
-        run: composer config repositories.nuxbe-packages composer https://packages.nuxbe.io/api/packages
 
       - name: Install Composer dependencies
         working-directory: backend
