@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  screenshots-ios:
-    name: Generate & Upload iOS Screenshots
-    runs-on: macos-latest
+  screenshots:
+    name: Generate App Store Screenshots
+    runs-on: [self-hosted, Linux]
 
     steps:
       - name: Checkout code
@@ -20,8 +20,43 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: .
         run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Generate Screenshots
+        run: npm run screenshots
+        env:
+          DEMO_SERVER_URL: ${{ secrets.DEMO_SERVER_URL }}
+          DEMO_EMAIL: ${{ secrets.DEMO_EMAIL }}
+          DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+
+      - name: Upload Screenshots Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-screenshots
+          path: ios/App/fastlane/screenshots
+          retention-days: 90
+
+  upload:
+    name: Upload to App Store Connect
+    runs-on: [self-hosted, Linux]
+    needs: screenshots
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download screenshots
+        uses: actions/download-artifact@v4
+        with:
+          name: app-screenshots
+          path: ios/App/fastlane/screenshots
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -29,35 +64,6 @@ jobs:
           ruby-version: '3.2'
           bundler-cache: true
           working-directory: ios/App
-
-      - name: Install Fastlane
-        working-directory: ios/App
-        run: bundle install
-
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-
-      - name: Create Google Services file
-        working-directory: ios/App
-        run: echo '${{ secrets.IOS_GOOGLE_SERVICES_PLIST }}' > GoogleService-Info.plist
-
-      - name: Build iOS app
-        working-directory: .
-        run: npm run build:ios
-
-      - name: Sync Capacitor
-        working-directory: .
-        run: npm run sync:ios
-
-      - name: Install CocoaPods
-        working-directory: ios/App
-        run: pod install
-
-      - name: Generate Screenshots
-        working-directory: ios/App
-        run: bundle exec fastlane screenshots
 
       - name: Upload Screenshots to App Store Connect
         working-directory: ios/App
@@ -67,11 +73,3 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
         run: bundle exec fastlane upload_screenshots
-
-      - name: Upload Screenshots Artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: ios-screenshots
-          path: ios/App/fastlane/screenshots
-          retention-days: 90
