@@ -196,19 +196,27 @@ async function main() {
     const isHeadless = process.env.HEADED !== '1';
     const browser = await chromium.launch({ headless: isHeadless });
 
+    // Group devices by deviceScaleFactor (can only be set at context creation)
+    const scaleGroups = {};
+    for (const device of DEVICES) {
+        const key = device.deviceScaleFactor;
+        if (!scaleGroups[key]) scaleGroups[key] = [];
+        scaleGroups[key].push(device);
+    }
+
     try {
         for (const lang of LANGUAGES) {
             const langDir = path.join(SCREENSHOT_DIR, lang);
             await mkdir(langDir, { recursive: true });
 
-            for (const device of DEVICES) {
-                console.log(`\n--- ${device.name} / ${lang} ---`);
+            for (const [scaleFactor, devices] of Object.entries(scaleGroups)) {
+                console.log(`\n--- ${lang} / @${scaleFactor}x (${devices.map((d) => d.name).join(', ')}) ---`);
 
                 const context = await browser.newContext({
-                    viewport: device.viewport,
-                    deviceScaleFactor: device.deviceScaleFactor,
-                    isMobile: device.isMobile,
-                    hasTouch: device.hasTouch,
+                    viewport: devices[0].viewport,
+                    deviceScaleFactor: Number(scaleFactor),
+                    isMobile: true,
+                    hasTouch: true,
                     locale: lang,
                 });
 
@@ -222,15 +230,20 @@ async function main() {
                     });
                     await page.waitForTimeout(2000);
 
-                    const setupFile = path.join(langDir, `${device.name}-01_SetupScreen.png`);
-                    await page.screenshot({ path: setupFile });
-                    console.log(`  + 01_SetupScreen`);
+                    for (const device of devices) {
+                        await page.setViewportSize(device.viewport);
+                        await page.waitForTimeout(500);
+                        const setupFile = path.join(langDir, `${device.name}-01_SetupScreen.png`);
+                        await page.screenshot({ path: setupFile });
+                        console.log(`  + ${device.name} / 01_SetupScreen`);
+                    }
                 } catch (err) {
                     console.error(`  ! 01_SetupScreen failed: ${err.message}`);
                 }
 
-                // --- Login to demo server ---
+                // --- Login once per scale group ---
                 try {
+                    await page.setViewportSize(devices[0].viewport);
                     await login(page);
                     console.log(`  + Logged in`);
                 } catch (err) {
@@ -239,7 +252,7 @@ async function main() {
                     continue;
                 }
 
-                // --- Screenshots 2-5: App pages ---
+                // --- Screenshots 2-5: Navigate once, resize for each device ---
                 for (const pageConfig of PAGES) {
                     try {
                         await page.goto(`${SERVER_URL}${pageConfig.path}`, {
@@ -248,9 +261,13 @@ async function main() {
                         });
                         await waitForPageReady(page);
 
-                        const filename = `${device.name}-${pageConfig.name}.png`;
-                        await page.screenshot({ path: path.join(langDir, filename) });
-                        console.log(`  + ${pageConfig.name}`);
+                        for (const device of devices) {
+                            await page.setViewportSize(device.viewport);
+                            await page.waitForTimeout(500);
+                            const filename = `${device.name}-${pageConfig.name}.png`;
+                            await page.screenshot({ path: path.join(langDir, filename) });
+                            console.log(`  + ${device.name} / ${pageConfig.name}`);
+                        }
                     } catch (err) {
                         console.error(`  ! ${pageConfig.name} failed: ${err.message}`);
                     }
