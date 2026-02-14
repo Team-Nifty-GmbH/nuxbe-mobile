@@ -53,6 +53,13 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Configure Composer auth
+        run: composer config --global --auth http-basic.packages.nuxbe.io token ${{ secrets.NUXBE_PACKAGES_TOKEN }}
+
+      - name: Add Nuxbe package repository
+        working-directory: backend
+        run: composer config repositories.nuxbe-packages composer https://packages.nuxbe.io/api/packages
+
       - name: Install Composer dependencies
         working-directory: backend
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-cache --ignore-platform-reqs
