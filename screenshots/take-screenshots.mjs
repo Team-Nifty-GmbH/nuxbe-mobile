@@ -21,7 +21,7 @@
 
 import { chromium } from 'playwright';
 import { spawn } from 'child_process';
-import { mkdir, rm } from 'fs/promises';
+import { mkdir, readFile, rm } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -221,6 +221,24 @@ async function main() {
                 });
 
                 const page = await context.newPage();
+
+                // --- Screenshot 0: Splash Screen ---
+                try {
+                    const splashImage = path.join(ROOT, 'ios', 'App', 'App', 'Assets.xcassets', 'Splash.imageset', 'splash-2732x2732.png');
+                    const splashBase64 = (await readFile(splashImage)).toString('base64');
+                    await page.setContent(`<html><body style="margin:0;background:#6366f1;display:flex;align-items:center;justify-content:center;width:100vw;height:100vh;overflow:hidden"><img src="data:image/png;base64,${splashBase64}" style="min-width:100%;min-height:100%;object-fit:cover" /></body></html>`);
+                    await page.waitForTimeout(500);
+
+                    for (const device of devices) {
+                        await page.setViewportSize(device.viewport);
+                        await page.waitForTimeout(300);
+                        const splashFile = path.join(langDir, `${device.name}-00_SplashScreen.png`);
+                        await page.screenshot({ path: splashFile });
+                        console.log(`  + ${device.name} / 00_SplashScreen`);
+                    }
+                } catch (err) {
+                    console.error(`  ! 00_SplashScreen failed: ${err.message}`);
+                }
 
                 // --- Screenshot 1: Setup Screen (local app) ---
                 try {
