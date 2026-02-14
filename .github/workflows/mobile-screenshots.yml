@@ -55,7 +55,7 @@ jobs:
 
       - name: Install Composer dependencies
         working-directory: backend
-        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-cache --ignore-platform-reqs
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-cache --ignore-platform-reqs
 
       - name: Install NPM dependencies and build backend
         working-directory: backend
