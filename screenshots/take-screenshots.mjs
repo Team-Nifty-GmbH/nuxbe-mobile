@@ -294,6 +294,41 @@ async function main() {
                 await context.close();
             }
         }
+        // --- Store Assets (language-independent) ---
+        console.log('\n--- Store Assets ---');
+        const assetsDir = path.join(SCREENSHOT_DIR, 'store-assets');
+        await mkdir(assetsDir, { recursive: true });
+
+        const splashImage = path.join(ROOT, 'ios', 'App', 'App', 'Assets.xcassets', 'Splash.imageset', 'splash-2732x2732.png');
+        const splashBase64 = (await readFile(splashImage)).toString('base64');
+        const appIcon = path.join(ROOT, 'ios', 'App', 'App', 'Assets.xcassets', 'AppIcon.appiconset', 'AppIcon-512@2x.png');
+        const iconBase64 = (await readFile(appIcon)).toString('base64');
+
+        // App Icon 512x512
+        try {
+            const iconCtx = await browser.newContext({ viewport: { width: 512, height: 512 }, deviceScaleFactor: 1 });
+            const iconPage = await iconCtx.newPage();
+            await iconPage.setContent(`<html><body style="margin:0;padding:0;width:512px;height:512px;overflow:hidden"><img src="data:image/png;base64,${iconBase64}" style="width:512px;height:512px" /></body></html>`);
+            await iconPage.waitForTimeout(500);
+            await iconPage.screenshot({ path: path.join(assetsDir, 'app-icon-512x512.png') });
+            await iconCtx.close();
+            console.log('  + app-icon-512x512.png');
+        } catch (err) {
+            console.error(`  ! App Icon failed: ${err.message}`);
+        }
+
+        // Feature Graphic 1024x500
+        try {
+            const fgCtx = await browser.newContext({ viewport: { width: 1024, height: 500 }, deviceScaleFactor: 1 });
+            const fgPage = await fgCtx.newPage();
+            await fgPage.setContent(`<html><body style="margin:0;width:1024px;height:500px;overflow:hidden"><img src="data:image/png;base64,${splashBase64}" style="width:100%;height:100%;object-fit:cover" /></body></html>`);
+            await fgPage.waitForTimeout(500);
+            await fgPage.screenshot({ path: path.join(assetsDir, 'feature-graphic-1024x500.png') });
+            await fgCtx.close();
+            console.log('  + feature-graphic-1024x500.png');
+        } catch (err) {
+            console.error(`  ! Feature Graphic failed: ${err.message}`);
+        }
     } finally {
         await browser.close();
         localServer.kill();

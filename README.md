@@ -2,6 +2,146 @@
 
 Native iOS & Android mobile app für Flux ERP mit Capacitor.
 
+---
+
+## Store Listing Texts
+
+### Google Play Store
+
+#### Kurze Beschreibung (DE)
+Nuxbe – Dein Flux ERP für unterwegs. Aufträge, Tickets und Kontakte immer dabei.
+
+#### Short Description (EN)
+Nuxbe – Your Flux ERP on the go. Orders, tickets and contacts always at hand.
+
+#### Vollständige Beschreibung (DE)
+Nuxbe bringt dein Flux ERP auf dein Smartphone und Tablet. Greife von überall auf deine Geschäftsdaten zu – schnell, sicher und ohne Umwege.
+
+Verbinde dich mit deinem Flux ERP Server und arbeite mobil mit allen wichtigen Funktionen:
+
+Aufträge verwalten
+Behalte den Überblick über alle Aufträge, Angebote und Rechnungen. Erstelle neue Aufträge direkt vom Handy aus und verfolge den Status in Echtzeit.
+
+Tickets bearbeiten
+Reagiere sofort auf Kundenanfragen. Tickets einsehen, kommentieren und bearbeiten – egal wo du gerade bist.
+
+Kontakte pflegen
+Alle Kunden- und Lieferantendaten griffbereit. Kontaktdaten nachschlagen, Adressen prüfen und Ansprechpartner finden.
+
+Dashboard
+Dein persönliches Dashboard zeigt dir die wichtigsten Kennzahlen und anstehenden Aufgaben auf einen Blick.
+
+Weitere Features:
+• Push-Benachrichtigungen – Werde sofort informiert wenn sich etwas ändert
+• QR-Code Setup – Verbinde dich in Sekunden mit deinem Server
+• Barcode Scanner – Scanne Produktbarcodes direkt mit der Kamera
+• Kamera-Integration – Fotos aufnehmen und direkt hochladen
+• Multi-Server – Wechsle zwischen verschiedenen Flux ERP Installationen
+• Dark Mode – Automatische Anpassung an deine Systemeinstellungen
+• Mehrsprachig – Verfügbar in Deutsch und Englisch
+
+Nuxbe ist die offizielle Mobile-App für Flux ERP von Team Nifty. Du benötigst einen aktiven Flux ERP Server um die App nutzen zu können.
+
+#### Full Description (EN)
+Nuxbe brings your Flux ERP to your smartphone and tablet. Access your business data from anywhere – fast, secure and straightforward.
+
+Connect to your Flux ERP server and work on the go with all the features that matter:
+
+Order Management
+Keep track of all orders, quotes and invoices. Create new orders right from your phone and follow their status in real time.
+
+Ticket Handling
+Respond to customer requests instantly. View, comment and manage tickets – no matter where you are.
+
+Contact Management
+All customer and supplier data at your fingertips. Look up contact details, check addresses and find the right person to talk to.
+
+Dashboard
+Your personal dashboard shows key metrics and upcoming tasks at a glance.
+
+More features:
+• Push Notifications – Get notified instantly when something changes
+• QR Code Setup – Connect to your server in seconds
+• Barcode Scanner – Scan product barcodes directly with your camera
+• Camera Integration – Take photos and upload them on the spot
+• Multi-Server – Switch between different Flux ERP installations
+• Dark Mode – Adapts automatically to your system settings
+• Multilingual – Available in German and English
+
+Nuxbe is the official mobile app for Flux ERP by Team Nifty. You need an active Flux ERP server to use this app.
+
+---
+
+### Apple App Store
+
+#### Promotional Text (DE)
+Nuxbe bringt dein Flux ERP aufs Handy – Aufträge, Tickets und Kontakte immer griffbereit, egal wo du bist.
+
+#### Promotional Text (EN)
+Nuxbe brings your Flux ERP to your phone – orders, tickets and contacts always at hand, wherever you are.
+
+#### Beschreibung (DE)
+Nuxbe ist die offizielle Mobile-App für Flux ERP. Greife von überall auf deine Geschäftsdaten zu – schnell, sicher und ohne Umwege.
+
+Verbinde dich mit deinem Flux ERP Server und arbeite mobil mit allen wichtigen Funktionen:
+
+AUFTRÄGE VERWALTEN
+Behalte den Überblick über alle Aufträge, Angebote und Rechnungen. Erstelle neue Aufträge direkt vom Handy aus und verfolge den Status in Echtzeit.
+
+TICKETS BEARBEITEN
+Reagiere sofort auf Kundenanfragen. Tickets einsehen, kommentieren und bearbeiten – egal wo du gerade bist.
+
+KONTAKTE PFLEGEN
+Alle Kunden- und Lieferantendaten griffbereit. Kontaktdaten nachschlagen, Adressen prüfen und Ansprechpartner finden.
+
+DASHBOARD
+Dein persönliches Dashboard zeigt dir die wichtigsten Kennzahlen und anstehenden Aufgaben auf einen Blick.
+
+WEITERE FEATURES
+• Push-Benachrichtigungen – Werde sofort informiert wenn sich etwas ändert
+• QR-Code Setup – Verbinde dich in Sekunden mit deinem Server
+• Barcode Scanner – Scanne Produktbarcodes direkt mit der Kamera
+• Kamera-Integration – Fotos aufnehmen und direkt hochladen
+• Multi-Server – Wechsle zwischen verschiedenen Flux ERP Installationen
+• Dark Mode – Automatische Anpassung an deine Systemeinstellungen
+
+Du benötigst einen aktiven Flux ERP Server um Nuxbe nutzen zu können.
+
+#### Description (EN)
+Nuxbe is the official mobile app for Flux ERP. Access your business data from anywhere – fast, secure and straightforward.
+
+Connect to your Flux ERP server and work on the go with all the features that matter:
+
+ORDER MANAGEMENT
+Keep track of all orders, quotes and invoices. Create new orders right from your phone and follow their status in real time.
+
+TICKET HANDLING
+Respond to customer requests instantly. View, comment and manage tickets – no matter where you are.
+
+CONTACT MANAGEMENT
+All customer and supplier data at your fingertips. Look up contact details, check addresses and find the right person to talk to.
+
+DASHBOARD
+Your personal dashboard shows key metrics and upcoming tasks at a glance.
+
+MORE FEATURES
+• Push Notifications – Get notified instantly when something changes
+• QR Code Setup – Connect to your server in seconds
+• Barcode Scanner – Scan product barcodes directly with your camera
+• Camera Integration – Take photos and upload them on the spot
+• Multi-Server – Switch between different Flux ERP installations
+• Dark Mode – Adapts automatically to your system settings
+
+You need an active Flux ERP server to use Nuxbe.
+
+#### Keywords (DE)
+ERP,Flux,Aufträge,Tickets,Kontakte,Rechnungen,Warenwirtschaft,Büro,CRM,Business
+
+#### Keywords (EN)
+ERP,Flux,orders,tickets,contacts,invoices,business,CRM,management,mobile
+
+---
+
 ## 📱 Features
 
 - ✅ **Multi-Tenant Support**: Eine App für alle Flux ERP Installationen
