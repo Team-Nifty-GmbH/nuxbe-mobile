@@ -34,8 +34,9 @@ const DEMO_EMAIL = process.env.DEMO_EMAIL || 'demo@demo.com';
 const DEMO_PASSWORD = process.env.DEMO_PASSWORD || 'demo';
 const LOCAL_PORT = 4173;
 
-// Apple App Store required resolutions
+// App Store required resolutions
 const DEVICES = [
+    // Apple App Store
     {
         name: 'iPhone 14 Plus',
         viewport: { width: 428, height: 926 },
@@ -46,9 +47,34 @@ const DEVICES = [
     },
     {
         name: 'iPad Pro 13-inch (M4)',
-        viewport: { width: 1032, height: 1376 },
+        viewport: { width: 1024, height: 1366 },
         deviceScaleFactor: 2,
-        // Output: 2064 x 2752 (13" display)
+        // Output: 2048 x 2732 (13" display)
+        isMobile: true,
+        hasTouch: true,
+    },
+    // Google Play
+    {
+        name: 'Android Phone',
+        viewport: { width: 360, height: 640 },
+        deviceScaleFactor: 3,
+        // Output: 1080 x 1920
+        isMobile: true,
+        hasTouch: true,
+    },
+    {
+        name: 'Android 7-inch Tablet',
+        viewport: { width: 540, height: 960 },
+        deviceScaleFactor: 2,
+        // Output: 1080 x 1920
+        isMobile: true,
+        hasTouch: true,
+    },
+    {
+        name: 'Android 10-inch Tablet',
+        viewport: { width: 800, height: 1280 },
+        deviceScaleFactor: 2,
+        // Output: 1600 x 2560
         isMobile: true,
         hasTouch: true,
     },
@@ -242,7 +268,9 @@ async function main() {
     console.log(`Screenshots saved to: ${SCREENSHOT_DIR}`);
 }
 
-main().catch((err) => {
-    console.error('Fatal error:', err);
-    process.exit(1);
-});
+main()
+    .then(() => process.exit(0))
+    .catch((err) => {
+        console.error('Fatal error:', err);
+        process.exit(1);
+    });
