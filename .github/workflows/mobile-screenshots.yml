@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
 
 env:
-  SERVER_URL: http://127.0.0.1:8000
   DB_DATABASE: nuxbe_screenshots
   DB_USERNAME: root
 
@@ -12,6 +11,24 @@ jobs:
   screenshots:
     name: Generate App Store Screenshots
     runs-on: [self-hosted, Linux]
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: nuxbe_screenshots
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+
+      meilisearch:
+        image: getmeili/meilisearch:latest
+        env:
+          MEILI_MASTER_KEY: masterKey
+          MEILI_NO_ANALYTICS: 'true'
+        ports:
+          - 7700:7700
 
     steps:
       - name: Checkout code
@@ -23,24 +40,6 @@ jobs:
           repository: Team-Nifty-GmbH/demo-flux
           token: ${{ secrets.GH_PACKAGES_TOKEN }}
           path: backend
-
-      # --- Backend Setup ---
-      - name: Setup MySQL
-        run: |
-          sudo service mysql start || true
-          sleep 3
-          mysql -u root -e "CREATE DATABASE IF NOT EXISTS nuxbe_screenshots;"
-
-      - name: Start Meilisearch
-        run: |
-          meilisearch --master-key=masterKey --no-analytics &
-          sleep 3
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.4
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
