@@ -110,7 +110,7 @@ function startLocalServer() {
 async function login(page) {
     await page.goto(`${SERVER_URL}/login`, { waitUntil: 'networkidle', timeout: 30000 });
 
-    // Wait for the login form to appear (use visible: true to avoid hidden reset-password fields)
+    // Wait for the login form to appear
     await page.locator('input[type="email"]:visible').first().waitFor({ timeout: 15000 });
 
     // Fill credentials (only target visible inputs to avoid reset-password form)
@@ -158,8 +158,9 @@ async function main() {
     console.log(`Langs:   ${LANGUAGES.join(', ')}`);
     console.log(`Output:  ${SCREENSHOT_DIR}\n`);
 
-    // Clean output directory
+    // Clean and create output directory
     await rm(SCREENSHOT_DIR, { recursive: true, force: true });
+    await mkdir(SCREENSHOT_DIR, { recursive: true });
 
     // Start local server for setup screen
     console.log('Starting local preview server...');
