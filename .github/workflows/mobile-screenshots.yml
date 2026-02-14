@@ -141,6 +141,8 @@ jobs:
         run: npm run screenshots
         env:
           DEMO_SERVER_URL: http://127.0.0.1:8000
+          DEMO_EMAIL: admin@example.com
+          DEMO_PASSWORD: password
 
       - name: Upload Screenshots Artifact
         uses: actions/upload-artifact@v4

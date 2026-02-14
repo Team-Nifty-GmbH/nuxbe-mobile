@@ -108,20 +108,20 @@ function startLocalServer() {
  * Login to the demo server. Handles both pre-filled demo forms and manual credential entry.
  */
 async function login(page) {
-    await page.goto(`${SERVER_URL}/login-mobile`, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.goto(`${SERVER_URL}/login`, { waitUntil: 'networkidle', timeout: 30000 });
 
-    // Wait for the login form to appear
-    await page.waitForSelector('input[type="email"], input[name="email"]', { timeout: 15000 });
+    // Wait for the login form to appear (use visible: true to avoid hidden reset-password fields)
+    await page.locator('input[type="email"]:visible').first().waitFor({ timeout: 15000 });
 
-    // Fill credentials
-    const emailField = page.locator('input[type="email"], input[name="email"]').first();
-    const passwordField = page.locator('input[type="password"], input[name="password"]').first();
+    // Fill credentials (only target visible inputs to avoid reset-password form)
+    const emailField = page.locator('input[type="email"]:visible').first();
+    const passwordField = page.locator('input[type="password"]:visible').first();
 
     await emailField.fill(DEMO_EMAIL);
     await passwordField.fill(DEMO_PASSWORD);
 
     // Click login button
-    const loginButton = page.locator('button[type="submit"], button:has-text("Login"), button:has-text("Anmelden")').first();
+    const loginButton = page.locator('button[type="submit"]:visible').first();
     await loginButton.click();
 
     // Wait for navigation away from login page
@@ -166,7 +166,8 @@ async function main() {
     const localServer = await startLocalServer();
     console.log(`Local server running on http://localhost:${LOCAL_PORT}\n`);
 
-    const browser = await chromium.launch({ headless: true });
+    const isHeadless = process.env.HEADED !== '1';
+    const browser = await chromium.launch({ headless: isHeadless });
 
     try {
         for (const lang of LANGUAGES) {
