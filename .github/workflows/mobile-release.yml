@@ -57,6 +57,9 @@ jobs:
         working-directory: ios/App
         run: echo '${{ secrets.IOS_GOOGLE_SERVICES_PLIST }}' > GoogleService-Info.plist
 
+      - name: Clean up signing keychain
+        run: security delete-keychain signing_temp.keychain 2>/dev/null || true
+
       - name: Import Code Signing Certificates
         uses: apple-actions/import-codesign-certs@v2
         with:
