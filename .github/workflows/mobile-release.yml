@@ -149,12 +149,12 @@ jobs:
       - name: Create keystore.properties
         working-directory: android
         run: |
-          cat > keystore.properties << EOF
-          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
-          storeFile=release.keystore
-          EOF
+          printf '%s\n' \
+            "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
+            "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" \
+            "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" \
+            "storeFile=release.keystore" \
+            > keystore.properties
 
       - name: Build Android app
         working-directory: .
