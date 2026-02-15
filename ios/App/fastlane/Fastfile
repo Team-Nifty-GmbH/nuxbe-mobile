@@ -1,4 +1,4 @@
-# Fastfile for Nuxbe Mobile iOS App
+# Fastfile for Nuxbe Mobile
 
 default_platform(:ios)
 
@@ -55,82 +55,45 @@ platform :ios do
     )
   end
 
-  desc "Build and upload to TestFlight"
-  lane :beta do
-    setup_ci if ENV['CI']
-
-    # Set version from tag if provided
-    if ENV['APP_VERSION'] && !ENV['APP_VERSION'].empty?
-      increment_version_number(
-        version_number: ENV['APP_VERSION'],
-        xcodeproj: "App.xcodeproj"
-      )
-    end
-
-    # Set build number if provided, otherwise increment
-    if ENV['BUILD_NUMBER'] && !ENV['BUILD_NUMBER'].empty?
-      increment_build_number(
-        build_number: ENV['BUILD_NUMBER'],
-        xcodeproj: "App.xcodeproj"
-      )
-    else
-      increment_build_number(
-        xcodeproj: "App.xcodeproj"
-      )
-    end
-
-    app_identifier = ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe"
-    prod_profile = ENV['PROVISIONING_PROFILE_SPECIFIER']
-
-    export_opts = {
-      method: "app-store",
-      signingStyle: "manual"
-    }
-
-    if prod_profile && !prod_profile.empty?
-      export_opts[:provisioningProfiles] = {
-        app_identifier => prod_profile
-      }
-    end
-
-    xcargs = []
-    xcargs << "DEVELOPMENT_TEAM=YS428GD6FU"
-    if prod_profile && !prod_profile.empty?
-      xcargs << "PROVISIONING_PROFILE_SPECIFIER='#{prod_profile}'"
-    end
-
-    # Build the app
-    gym(
-      scheme: "App",
-      workspace: "App.xcworkspace",
-      export_method: "app-store",
-      clean: true,
-      output_directory: "./build",
-      output_name: "nuxbe-mobile.ipa",
-      export_options: export_opts,
-      xcargs: xcargs.join(' ')
-    )
-
-    # Upload to TestFlight
+  desc "Upload IPA to TestFlight"
+  lane :upload do
     api_key = app_store_connect_api_key(
-      key_id: ENV['APP_STORE_CONNECT_API_KEY_ID'],
-      issuer_id: ENV['APP_STORE_CONNECT_ISSUER_ID'],
-      key_content: ENV['APP_STORE_CONNECT_API_KEY_CONTENT'],
-      is_key_content_base64: true,
-      duration: 1200,
-      in_house: false
+      key_id: ENV['ASC_KEY_ID'],
+      issuer_id: ENV['ASC_ISSUER_ID'],
+      key_filepath: File.expand_path(ENV['ASC_KEY_PATH']),
     )
+
+    ipa_path = ENV['IPA_PATH'] || Dir['./build/**/*.ipa'].map { |f| File.expand_path(f) }.first
+    UI.user_error!("No IPA file found") unless ipa_path
 
     upload_to_testflight(
       api_key: api_key,
+      ipa: ipa_path,
       skip_waiting_for_build_processing: true,
-      skip_submission: true,
-      distribute_external: false,
-      notify_external_testers: false
     )
   end
 
-  desc "Build development IPA for nightly builds"
+  desc "Upload screenshots to App Store Connect"
+  lane :upload_screenshots do
+    api_key = app_store_connect_api_key(
+      key_id: ENV['ASC_KEY_ID'],
+      issuer_id: ENV['ASC_ISSUER_ID'],
+      key_filepath: File.expand_path(ENV['ASC_KEY_PATH']),
+    )
+
+    deliver(
+      api_key: api_key,
+      app_identifier: ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe",
+      skip_binary_upload: true,
+      skip_metadata: true,
+      overwrite_screenshots: true,
+      screenshots_path: "./fastlane/screenshots",
+      force: true,
+      precheck_include_in_app_purchases: false,
+    )
+  end
+
+  desc "Build development IPA"
   lane :build_development do
     setup_ci if ENV['CI']
 
@@ -170,72 +133,33 @@ platform :ios do
 
   desc "Download provisioning profiles"
   lane :sync_profiles do
-    match(
-      type: "appstore",
-      readonly: true
-    )
-
-    match(
-      type: "development",
-      readonly: true
-    )
+    match(type: "appstore", readonly: true)
+    match(type: "development", readonly: true)
   end
 
   desc "Register new device"
   lane :add_device do |options|
-    device_name = options[:name]
-    device_udid = options[:udid]
-
-    register_devices(
-      devices: {
-        device_name => device_udid
-      }
-    )
-
-    match(
-      type: "development",
-      force_for_new_devices: true
-    )
+    register_devices(devices: { options[:name] => options[:udid] })
+    match(type: "development", force_for_new_devices: true)
   end
+end
 
-  desc "Take App Store screenshots"
-  lane :screenshots do
-    capture_screenshots(
-      workspace: "App.xcworkspace",
-      scheme: "AppUITests",
-      devices: [
-        "iPhone 14 Plus",
-        "iPad Pro 13-inch (M4)"
-      ],
-      languages: ["de-DE", "en-US"],
-      output_directory: "./fastlane/screenshots",
-      clear_previous_screenshots: true,
-      override_status_bar: true,
-      concurrent_simulators: true,
-      stop_after_first_error: false
-    )
-  end
+platform :android do
+  desc "Upload AAB to Google Play (internal testing track)"
+  lane :upload do
+    aab_path = ENV['AAB_PATH']
+    UI.user_error!("No AAB file found - set AAB_PATH") unless aab_path
 
-  desc "Upload screenshots to App Store Connect"
-  lane :upload_screenshots do
-    api_key = app_store_connect_api_key(
-      key_id: ENV['APP_STORE_CONNECT_API_KEY_ID'],
-      issuer_id: ENV['APP_STORE_CONNECT_ISSUER_ID'],
-      key_content: ENV['APP_STORE_CONNECT_API_KEY_CONTENT'],
-      is_key_content_base64: true,
-      duration: 1200,
-      in_house: false
-    )
-
-    deliver(
-      api_key: api_key,
-      app_identifier: ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe",
-      skip_binary_upload: true,
-      skip_metadata: true,
-      overwrite_screenshots: true,
-      screenshots_path: "./fastlane/screenshots",
-      force: true,
-      precheck_include_in_app_purchases: false
+    upload_to_play_store(
+      aab: aab_path,
+      track: "internal",
+      release_status: "draft",
+      json_key: ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH'],
+      package_name: "com.teamnifty.nuxbe",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
     )
   end
 end
