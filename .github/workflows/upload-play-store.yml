@@ -1,0 +1,49 @@
+name: Upload to Google Play
+
+on:
+  workflow_dispatch:
+
+jobs:
+  upload-android:
+    name: Upload Android to Google Play
+    runs-on: [self-hosted, macOS]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios/App
+
+      - name: Install Fastlane
+        working-directory: ios/App
+        run: bundle install
+
+      - name: Download Android AAB
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: mobile-release.yml
+          name: android-aab
+          path: artifacts/android
+          search_artifacts: true
+          if_no_artifact_found: fail
+
+      - name: Upload Android to Google Play
+        working-directory: ios/App
+        run: |
+          AAB_FILE=$(find ${{ github.workspace }}/artifacts/android -name "*.aab" | head -1)
+          if [ -z "$AAB_FILE" ]; then
+            echo "No AAB found"
+            ls -la ${{ github.workspace }}/artifacts/android/
+            exit 1
+          fi
+          echo "Uploading $AAB_FILE to Google Play..."
+          export AAB_PATH="$AAB_FILE"
+          export PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH="/tmp/play-store-key.json"
+          echo '${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}' > "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
+          bundle exec fastlane android upload
+          rm -f "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"

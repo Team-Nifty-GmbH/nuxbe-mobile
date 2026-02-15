@@ -1,11 +1,11 @@
-name: Upload to App Stores
+name: Upload to TestFlight
 
 on:
   workflow_dispatch:
 
 jobs:
-  upload-stores:
-    name: Upload to App Stores
+  upload-ios:
+    name: Upload iOS to TestFlight
     runs-on: [self-hosted, macOS]
 
     steps:
@@ -32,15 +32,6 @@ jobs:
           search_artifacts: true
           if_no_artifact_found: fail
 
-      - name: Download Android AAB
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          workflow: mobile-release.yml
-          name: android-aab
-          path: artifacts/android
-          search_artifacts: true
-          if_no_artifact_found: fail
-
       - name: Store App Store Connect API Key
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
@@ -62,19 +53,3 @@ jobs:
           ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           ASC_KEY_PATH: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
-
-      - name: Upload Android to Google Play
-        working-directory: ios/App
-        run: |
-          AAB_FILE=$(find ${{ github.workspace }}/artifacts/android -name "*.aab" | head -1)
-          if [ -z "$AAB_FILE" ]; then
-            echo "No AAB found"
-            ls -la ${{ github.workspace }}/artifacts/android/
-            exit 1
-          fi
-          echo "Uploading $AAB_FILE to Google Play..."
-          export AAB_PATH="$AAB_FILE"
-          export PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH="/tmp/play-store-key.json"
-          echo '${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}' > "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
-          bundle exec fastlane android upload
-          rm -f "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
