@@ -6,9 +6,11 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.webkit.WebView;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.WindowCompat;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.webkit.WebViewCompat;
 import androidx.webkit.WebViewFeature;
 
@@ -26,9 +28,26 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         createNotificationChannel();
         patchJSInjection();
+        setupPullToRefresh();
 
         // Ensure the system handles the status bar - content below it
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+    }
+
+    private void setupPullToRefresh() {
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        if (swipeRefreshLayout == null) return;
+
+        WebView webView = bridge.getWebView();
+
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            webView.evaluateJavascript("window.location.reload()", value -> {
+                swipeRefreshLayout.setRefreshing(false);
+            });
+        });
+
+        // Only allow pull-to-refresh when WebView is scrolled to top
+        swipeRefreshLayout.setOnChildScrollUpCallback((parent, child) -> webView.getScrollY() > 0);
     }
 
     private void createNotificationChannel() {

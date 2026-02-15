@@ -121,7 +121,6 @@ class NuxbeApp {
             if (savedUrl) {
                 this.serverUrl = savedUrl;
                 await this.initializeNativeFeatures();
-                this.enablePullToRefresh();
             }
             return;
         }
@@ -367,9 +366,6 @@ class NuxbeApp {
             // Setup other native bridges
             this.setupNativeBridges();
 
-            // Enable pull-to-refresh
-            this.enablePullToRefresh();
-
             // Setup dark mode observer for status bar
             this.setupDarkModeObserver();
             await this.updateStatusBarForColorScheme();
@@ -583,49 +579,6 @@ class NuxbeApp {
                 };
             }
         };
-    }
-
-    enablePullToRefresh() {
-        // Enable pull-to-refresh for the WebView
-        if (this.isNative) {
-            // Add pull-to-refresh listener
-            document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
-            document.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-            document.addEventListener('touchend', this.handleTouchEnd.bind(this));
-
-            this.touchStartY = 0;
-            this.touchCurrentY = 0;
-            this.isPulling = false;
-        }
-    }
-
-    handleTouchStart(e) {
-        // Only trigger if at top of page
-        if (window.scrollY === 0) {
-            this.touchStartY = e.touches[0].clientY;
-        }
-    }
-
-    handleTouchMove(e) {
-        if (window.scrollY === 0 && this.touchStartY > 0) {
-            this.touchCurrentY = e.touches[0].clientY;
-            const pullDistance = this.touchCurrentY - this.touchStartY;
-
-            // Trigger refresh if pulled down > 100px
-            if (pullDistance > 100 && !this.isPulling) {
-                this.isPulling = true;
-            }
-        }
-    }
-
-    handleTouchEnd() {
-        if (this.isPulling) {
-            window.location.reload();
-        }
-
-        this.touchStartY = 0;
-        this.touchCurrentY = 0;
-        this.isPulling = false;
     }
 
     setupNativeBridges() {
