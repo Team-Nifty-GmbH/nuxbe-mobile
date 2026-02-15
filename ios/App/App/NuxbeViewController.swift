@@ -24,6 +24,8 @@ class NuxbeViewController: CAPBridgeViewController {
 
     private func setupPullToRefresh() {
         guard let scrollView = webView?.scrollView else { return }
+        scrollView.bounces = true
+        scrollView.alwaysBounceVertical = true
         refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
         scrollView.refreshControl = refreshControl
     }
