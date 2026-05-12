@@ -95,6 +95,9 @@ jobs:
   build-android:
     name: Build Android
     runs-on: [self-hosted, Linux]
+    container:
+      image: cimg/android:2026.03.1-node
+      options: --user root
 
     steps:
       - name: Checkout code
@@ -110,19 +113,6 @@ jobs:
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
           echo "App version: $VERSION, Build number: $BUILD_NUMBER"
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
 
       - name: Install dependencies
         run: npm ci
