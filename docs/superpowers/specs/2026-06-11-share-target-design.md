@@ -25,7 +25,7 @@ Flow:
 
 ### Android
 
-- `AndroidManifest.xml`: intent filters on `MainActivity` for `ACTION_SEND`, `ACTION_SEND_MULTIPLE`, `ACTION_VIEW` with MIME types `application/pdf` and `image/*`.
+- `AndroidManifest.xml`: intent filters on `MainActivity` for `ACTION_SEND` / `ACTION_SEND_MULTIPLE` with `*/*` (the action registry on the Flux side filters via `accepts(mimeType)` — a manifest change needs an app release, a registry change only a server deploy; covers future cases like ZUGFeRD XML, CSV bank statements, vCards, EML) and `ACTION_VIEW` restricted to `application/pdf` / `image/*` (so Android does not offer Nuxbe as an opener for every file type).
 - `MainActivity.java`: handle the intent (same pattern as the existing push deep-link handling):
   - Resolve content URIs, copy each file into the app cache directory `shared_files/`.
   - Write metadata JSON (`[{ path, name, mimeType, size }]`) to Capacitor Preferences key `pending_shared_files`.
