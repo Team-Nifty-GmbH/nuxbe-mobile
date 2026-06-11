@@ -754,6 +754,16 @@ class NuxbeApp {
             finalDeepLinkPath = deepLinkTarget;
         }
 
+        // One-shot redirect set by ShareIntentHandler when files were shared into the app.
+        // The shared files themselves stay in pending_shared_files until the Flux page clears them.
+        if (!finalDeepLinkPath) {
+            const { value: shareRedirect } = await Preferences.get({ key: 'pending_share_redirect' });
+            if (shareRedirect === '1') {
+                finalDeepLinkPath = '/mobile/share-target';
+                await Preferences.remove({ key: 'pending_share_redirect' });
+            }
+        }
+
         // Don't show loading screen - keep splash visible until navigation completes
         // This prevents any flash of HTML content
 
