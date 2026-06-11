@@ -113,3 +113,56 @@ Kombiniert mit Capacitor Detection:
     <!-- Nur in der mobilen App sichtbar -->
 </div>
 ```
+
+## Share Target (geteilte Dateien empfangen)
+
+Wenn der Anwender Dateien (PDF, Bilder, XML, …) in die App teilt, legt die App
+sie im Cache ab und navigiert zu `{server}/mobile/share-target`. Die Flux-Seite
+liest die Dateien direkt über die Capacitor-Plugins (Preferences + Filesystem),
+die auf der Server-Origin injiziert sind.
+
+Android nimmt `ACTION_SEND` / `ACTION_SEND_MULTIPLE` mit beliebigem MIME-Type an
+(`*/*`) sowie `ACTION_VIEW` für PDF und Bilder. Die Filterung, welche Datei für
+welche Aktion zulässig ist, gehört in die Action-Registry auf Flux-Seite
+(`accepts(mimeType)`), nicht ins App-Manifest.
+
+### Metadaten lesen
+
+```javascript
+const { Preferences } = Capacitor.Plugins;
+const { Filesystem } = Capacitor.Plugins;
+
+const { value } = await Preferences.get({ key: 'pending_shared_files' });
+const files = value ? JSON.parse(value) : [];
+// [{ name: 'rechnung.pdf', mimeType: 'application/pdf', size: 12345, path: 'shared_files/1718000000000_0_rechnung.pdf' }]
+```
+
+### Dateiinhalt lesen (base64)
+
+```javascript
+const { data } = await Filesystem.readFile({
+    path: file.path,
+    directory: 'CACHE'
+});
+// data ist base64-encoded
+```
+
+### Nach erfolgreicher Aktion aufräumen
+
+```javascript
+await Preferences.remove({ key: 'pending_shared_files' });
+await Filesystem.rmdir({
+    path: 'shared_files',
+    directory: 'CACHE',
+    recursive: true
+});
+```
+
+### Verhalten
+
+- `pending_share_redirect` ist ein One-Shot-Flag, das die App selbst konsumiert -
+  die Flux-Seite muss es nicht beachten.
+- Bricht der Anwender ab, bleiben die Dateien liegen; der nächste Share
+  überschreibt sie, die App löscht Dateien älter als 24h beim Start.
+- Reine Text-/URL-Shares (ohne Datei-Stream) werden derzeit ignoriert.
+- Empfohlene Größenprüfung serverseitig: ~20 MB pro Datei (base64-Overhead beachten).
