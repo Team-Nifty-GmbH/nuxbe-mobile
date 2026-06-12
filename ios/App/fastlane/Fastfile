@@ -81,8 +81,15 @@ platform :ios do
       key_filepath: File.expand_path(ENV['ASC_KEY_PATH']),
     )
 
-    ipa_path = ENV['IPA_PATH'] || Dir['./build/**/*.ipa'].map { |f| File.expand_path(f) }.first
-    UI.user_error!("No IPA file found") unless ipa_path
+    # SKIP_BINARY submits the already uploaded build of this version
+    # (e.g. when retrying after a failed review submission)
+    skip_binary = ENV['SKIP_BINARY'] == 'true'
+
+    ipa_path = nil
+    unless skip_binary
+      ipa_path = ENV['IPA_PATH'] || Dir['./build/**/*.ipa'].map { |f| File.expand_path(f) }.first
+      UI.user_error!("No IPA file found") unless ipa_path
+    end
 
     app_version = (ENV['APP_VERSION'] || '').delete_prefix('v').sub(/-.*/, '')
 
@@ -93,6 +100,7 @@ platform :ios do
       api_key: api_key,
       app_identifier: ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe",
       ipa: ipa_path,
+      skip_binary_upload: skip_binary,
       app_version: app_version.empty? ? nil : app_version,
       submit_for_review: ENV['SUBMIT_FOR_REVIEW'] == 'true',
       automatic_release: false,
