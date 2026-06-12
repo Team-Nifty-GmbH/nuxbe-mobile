@@ -1,0 +1,6 @@
+git_url("https://github.com/Team-Nifty-GmbH/nuxbe-certificates.git")
+storage_mode("git")
+type("appstore")
+app_identifier(["com.teamnifty.nuxbe"])
+team_id("YS428GD6FU")
+readonly(true)

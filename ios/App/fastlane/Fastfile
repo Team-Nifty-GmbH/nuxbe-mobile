@@ -187,6 +187,67 @@ platform :ios do
     match(type: "development", readonly: true)
   end
 
+  desc "Create or renew certificates and profiles in the match repo (CI bootstrap)"
+  lane :bootstrap_signing do
+    api_key = app_store_connect_api_key(
+      key_id: ENV['ASC_KEY_ID'],
+      issuer_id: ENV['ASC_ISSUER_ID'],
+      key_filepath: File.expand_path(ENV['ASC_KEY_PATH']),
+    )
+
+    match(type: "appstore", readonly: false, api_key: api_key)
+    match(type: "development", readonly: false, api_key: api_key)
+  end
+
+  desc "Build production IPA signed via match"
+  lane :build_with_match do
+    setup_ci if ENV['CI']
+
+    if ENV['APP_VERSION'] && !ENV['APP_VERSION'].empty?
+      increment_version_number(
+        version_number: ENV['APP_VERSION'],
+        xcodeproj: "App.xcodeproj"
+      )
+    end
+
+    if ENV['BUILD_NUMBER'] && !ENV['BUILD_NUMBER'].empty?
+      increment_build_number(
+        build_number: ENV['BUILD_NUMBER'],
+        xcodeproj: "App.xcodeproj"
+      )
+    end
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV['ASC_KEY_ID'],
+      issuer_id: ENV['ASC_ISSUER_ID'],
+      key_filepath: File.expand_path(ENV['ASC_KEY_PATH']),
+    )
+
+    match(type: "appstore", readonly: true, api_key: api_key)
+
+    app_identifier = ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe"
+    profile_mapping = lane_context[SharedValues::MATCH_PROVISIONING_PROFILE_MAPPING]
+
+    gym(
+      scheme: "App",
+      workspace: "App.xcworkspace",
+      export_method: "app-store",
+      clean: true,
+      output_directory: "./build",
+      output_name: "nuxbe-mobile.ipa",
+      export_options: {
+        method: "app-store",
+        signingStyle: "manual",
+        provisioningProfiles: profile_mapping,
+      },
+      xcargs: [
+        "DEVELOPMENT_TEAM=YS428GD6FU",
+        "CODE_SIGN_STYLE=Manual",
+        "PROVISIONING_PROFILE_SPECIFIER='#{profile_mapping[app_identifier]}'",
+      ].join(' ')
+    )
+  end
+
   desc "Register new device"
   lane :add_device do |options|
     register_devices(devices: { options[:name] => options[:udid] })
