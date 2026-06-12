@@ -94,7 +94,7 @@ platform :ios do
     app_version = (ENV['APP_VERSION'] || '').delete_prefix('v').sub(/-.*/, '')
 
     # Upload metadata and release notes when the repo contains them
-    has_metadata = File.directory?(File.expand_path("./fastlane/metadata"))
+    has_metadata = File.directory?(File.expand_path("metadata", __dir__))
 
     deliver(
       api_key: api_key,
@@ -201,6 +201,32 @@ platform :ios do
     match(type: "development", readonly: true)
   end
 
+  desc "Revoke distribution certificates created today (orphaned bootstrap attempts)"
+  lane :revoke_orphaned_certs do
+    require 'time'
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV['ASC_KEY_ID'],
+      issuer_id: ENV['ASC_ISSUER_ID'],
+      key_filepath: File.expand_path(ENV['ASC_KEY_PATH']),
+    )
+
+    token = Spaceship::ConnectAPI::Token.from(hash: api_key)
+    Spaceship::ConnectAPI.token = token
+
+    # A distribution certificate is valid for one year. Anything expiring more
+    # than 363 days from now was created today - i.e. by a failed bootstrap.
+    threshold = Time.now + (363 * 24 * 60 * 60)
+
+    Spaceship::ConnectAPI::Certificate.all
+      .select { |cert| cert.certificate_type == "DISTRIBUTION" }
+      .select { |cert| Time.parse(cert.expiration_date) > threshold }
+      .each do |cert|
+        UI.important("Revoking orphaned distribution certificate #{cert.id} (expires #{cert.expiration_date})")
+        Spaceship::ConnectAPI.delete_certificate(certificate_id: cert.id)
+      end
+  end
+
   desc "Create or renew certificates and profiles in the match repo (CI bootstrap)"
   lane :bootstrap_signing do
     setup_ci if ENV['CI']
@@ -278,7 +304,7 @@ platform :android do
     UI.user_error!("No AAB file found - set AAB_PATH") unless aab_path
 
     # Upload changelogs when the repo contains Play metadata
-    has_metadata = File.directory?(File.expand_path("./fastlane/metadata/android"))
+    has_metadata = File.directory?(File.expand_path("metadata/android", __dir__))
 
     upload_to_play_store(
       aab: aab_path,
