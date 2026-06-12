@@ -1,0 +1,48 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-web:
+    name: Build Web Assets
+    runs-on: [self-hosted, Linux]
+    container:
+      image: cimg/android:2026.03.1-node
+      options: --user root
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web assets
+        run: npm run build
+
+  build-android:
+    name: Build Android (debug)
+    runs-on: [self-hosted, Linux]
+    container:
+      image: cimg/android:2026.03.1-node
+      options: --user root
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web assets and sync
+        run: npm run build:android
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug
