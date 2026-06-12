@@ -60,19 +60,10 @@ jobs:
         working-directory: ios/App
         run: echo '${{ secrets.IOS_GOOGLE_SERVICES_PLIST }}' > GoogleService-Info.plist
 
-      - name: Clean up signing keychain
-        run: security delete-keychain signing_temp.keychain 2>/dev/null || true
-
-      - name: Import Code Signing Certificates
-        uses: apple-actions/import-codesign-certs@v2
-        with:
-          p12-file-base64: ${{ secrets.IOS_DISTRIBUTION_CERT_P12 }}
-          p12-password: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
-
-      - name: Download Provisioning Profiles
+      - name: Store App Store Connect API Key
         run: |
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo '${{ secrets.IOS_PROVISION_PROFILE }}' | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/nuxbe_mobile.mobileprovision
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo '${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}' | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
 
       - name: Build iOS app
         run: npm run build:ios
@@ -84,10 +75,14 @@ jobs:
         working-directory: ios/App
         env:
           APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
-          PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.PROVISIONING_PROFILE_SPECIFIER }}
           APP_VERSION: ${{ env.APP_VERSION }}
           BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
-        run: bundle exec fastlane build
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_KEY_PATH: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+        run: bundle exec fastlane ios build_with_match
 
       - name: Upload iOS Artifact
         uses: actions/upload-artifact@v4
