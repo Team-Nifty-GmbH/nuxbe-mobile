@@ -203,6 +203,8 @@ platform :ios do
 
   desc "Create or renew certificates and profiles in the match repo (CI bootstrap)"
   lane :bootstrap_signing do
+    setup_ci if ENV['CI']
+
     api_key = app_store_connect_api_key(
       key_id: ENV['ASC_KEY_ID'],
       issuer_id: ENV['ASC_ISSUER_ID'],
