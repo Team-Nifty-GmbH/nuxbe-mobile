@@ -180,8 +180,32 @@ platform :ios do
       key_filepath: File.expand_path(ENV['ASC_KEY_PATH']),
     )
 
-    match(type: "appstore", readonly: false, api_key: api_key)
-    match(type: "development", readonly: false, api_key: api_key)
+    # Register the share extension app id and the shared app group, then
+    # make sure both app ids carry the app group capability. All calls are
+    # idempotent - they no-op when the resources already exist.
+    require 'json'
+    key_file = File.expand_path("../asc_api_key.json")
+    File.write(key_file, {
+      key_id: ENV['ASC_KEY_ID'],
+      issuer_id: ENV['ASC_ISSUER_ID'],
+      key: File.read(File.expand_path(ENV['ASC_KEY_PATH'])),
+    }.to_json)
+
+    begin
+      base = "cd .. && bundle exec fastlane produce"
+      auth = "--api_key_path #{key_file.shellescape} --team_id YS428GD6FU"
+
+      sh("#{base} create -a com.teamnifty.nuxbe.share --app_name 'Nuxbe Share' --skip_itc #{auth} || true")
+      sh("#{base} group -g group.com.teamnifty.nuxbe -n 'Nuxbe' #{auth} || true")
+      sh("#{base} associate_group -a com.teamnifty.nuxbe group.com.teamnifty.nuxbe #{auth}")
+      sh("#{base} associate_group -a com.teamnifty.nuxbe.share group.com.teamnifty.nuxbe #{auth}")
+    ensure
+      File.delete(key_file) if File.exist?(key_file)
+    end
+
+    # force: profiles must be regenerated when entitlements change (app group)
+    match(type: "appstore", readonly: false, force: true, api_key: api_key)
+    match(type: "development", readonly: false, force: true, api_key: api_key)
   end
 
   desc "Build production IPA signed via match"
@@ -210,8 +234,23 @@ platform :ios do
 
     match(type: "appstore", readonly: true, api_key: api_key)
 
-    app_identifier = ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe"
     profile_mapping = lane_context[SharedValues::MATCH_PROVISIONING_PROFILE_MAPPING]
+
+    # Per-target signing: a global PROVISIONING_PROFILE_SPECIFIER would also
+    # apply to the share extension target and break its signature.
+    {
+      "App" => "com.teamnifty.nuxbe",
+      "NuxbeShare" => "com.teamnifty.nuxbe.share",
+    }.each do |target, bundle_id|
+      update_code_signing_settings(
+        path: "App.xcodeproj",
+        targets: [target],
+        use_automatic_signing: false,
+        team_id: "YS428GD6FU",
+        code_sign_identity: "Apple Distribution",
+        profile_name: profile_mapping[bundle_id],
+      )
+    end
 
     gym(
       scheme: "App",
@@ -225,11 +264,6 @@ platform :ios do
         signingStyle: "manual",
         provisioningProfiles: profile_mapping,
       },
-      xcargs: [
-        "DEVELOPMENT_TEAM=YS428GD6FU",
-        "CODE_SIGN_STYLE=Manual",
-        "PROVISIONING_PROFILE_SPECIFIER='#{profile_mapping[app_identifier]}'",
-      ].join(' ')
     )
   end
 

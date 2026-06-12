@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		4CAF39562D218517C7D48987 /* NuxbeShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7F4E3C68E5B718CAC9E47FA5 /* NuxbeShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
-		NUXBE0001 /* NuxbeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = NUXBE0002 /* NuxbeViewController.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
@@ -19,9 +19,19 @@
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 		APPUITESTS001 /* ScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = APPUITESTS002 /* ScreenshotTests.swift */; };
 		APPUITESTS003 /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = APPUITESTS004 /* SnapshotHelper.swift */; };
+		D9E1D4582DEA013C38C246DB /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A40CEDD11AAF3995010A528 /* ShareViewController.swift */; };
+		DE592A8D6F192D4E1202F374 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1FEB69FE0F92F6AFB6FF2B0 /* Foundation.framework */; };
+		NUXBE0001 /* NuxbeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = NUXBE0002 /* NuxbeViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		5C2DECD8A5283EC853C4B23A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 26C36334B34F68C4C209E662;
+			remoteInfo = NuxbeShare;
+		};
 		APPUITESTS010 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
@@ -31,26 +41,45 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		46E54E205B1B1096587F7CEA /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4CAF39562D218517C7D48987 /* NuxbeShare.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		4966FBD7C032D37B706EF5D4 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		NUXBE0002 /* NuxbeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NuxbeViewController.swift; sourceTree = "<group>"; };
 		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		6A40CEDD11AAF3995010A528 /* ShareViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		7E0F7E29DD401727488A41C6 /* NuxbeShare.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = NuxbeShare.entitlements; sourceTree = "<group>"; };
+		7F4E3C68E5B718CAC9E47FA5 /* NuxbeShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NuxbeShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		99D2A7C32EB65C62004BF8F4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		99D2A7C52EB74BE4004BF8F4 /* AppDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppDebug.entitlements; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
-		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 		APPUITESTS002 /* ScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotTests.swift; sourceTree = "<group>"; };
 		APPUITESTS004 /* SnapshotHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotHelper.swift; sourceTree = "<group>"; };
 		APPUITESTS005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		APPUITESTS006 /* AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E1FEB69FE0F92F6AFB6FF2B0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
+		NUXBE0002 /* NuxbeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NuxbeViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +98,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C746A6D427CE3503859C861C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE592A8D6F192D4E1202F374 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -76,6 +113,7 @@
 			isa = PBXGroup;
 			children = (
 				AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */,
+				7E11761F001076F21D384A8D /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -89,6 +127,7 @@
 				504EC3051FED79650016851F /* Products */,
 				7F8756D8B27F46E3366F6CEA /* Pods */,
 				27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
+				D99782321ACB65E3C664A1CD /* NuxbeShare */,
 			);
 			sourceTree = "<group>";
 		};
@@ -97,6 +136,7 @@
 			children = (
 				504EC3041FED79650016851F /* App.app */,
 				APPUITESTS006 /* AppUITests.xctest */,
+				7F4E3C68E5B718CAC9E47FA5 /* NuxbeShare.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -118,6 +158,14 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		7E11761F001076F21D384A8D /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				E1FEB69FE0F92F6AFB6FF2B0 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 		7F8756D8B27F46E3366F6CEA /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -137,9 +185,37 @@
 			path = AppUITests;
 			sourceTree = "<group>";
 		};
+		D99782321ACB65E3C664A1CD /* NuxbeShare */ = {
+			isa = PBXGroup;
+			children = (
+				6A40CEDD11AAF3995010A528 /* ShareViewController.swift */,
+				4966FBD7C032D37B706EF5D4 /* Info.plist */,
+				7E0F7E29DD401727488A41C6 /* NuxbeShare.entitlements */,
+			);
+			name = NuxbeShare;
+			path = NuxbeShare;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		26C36334B34F68C4C209E662 /* NuxbeShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AC52C9220D052E8BDCBDC8AC /* Build configuration list for PBXNativeTarget "NuxbeShare" */;
+			buildPhases = (
+				D8CD8B232102A56067AC3901 /* Sources */,
+				C746A6D427CE3503859C861C /* Frameworks */,
+				FD9BDBB3B25CAE2977D8DE23 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NuxbeShare;
+			productName = NuxbeShare;
+			productReference = 7F4E3C68E5B718CAC9E47FA5 /* NuxbeShare.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		504EC3031FED79650016851F /* App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 504EC3161FED79650016851F /* Build configuration list for PBXNativeTarget "App" */;
@@ -149,10 +225,12 @@
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
+				46E54E205B1B1096587F7CEA /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				9F0EBD9DA4E23BF705012E45 /* PBXTargetDependency */,
 			);
 			name = App;
 			productName = App;
@@ -207,14 +285,13 @@
 				Base,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
-			packageReferences = (
-			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
 				APPUITESTS008 /* AppUITests */,
+				26C36334B34F68C4C209E662 /* NuxbeShare */,
 			);
 		};
 /* End PBXProject section */
@@ -235,6 +312,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		APPUITESTS022 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FD9BDBB3B25CAE2977D8DE23 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -298,9 +382,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D8CD8B232102A56067AC3901 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D9E1D4582DEA013C38C246DB /* ShareViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		9F0EBD9DA4E23BF705012E45 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = NuxbeShare;
+			target = 26C36334B34F68C4C209E662 /* NuxbeShare */;
+			targetProxy = 5C2DECD8A5283EC853C4B23A /* PBXContainerItemProxy */;
+		};
 		APPUITESTS011 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 504EC3031FED79650016851F /* App */;
@@ -519,6 +617,47 @@
 			};
 			name = Release;
 		};
+		C6A2493DF33C4A4A2B9F4D2B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = NuxbeShare/NuxbeShare.entitlements;
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = "$(inherited)";
+				DEVELOPMENT_TEAM = YS428GD6FU;
+				INFOPLIST_FILE = NuxbeShare/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.teamnifty.nuxbe.share;
+				PRODUCT_NAME = NuxbeShare;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		DA13389FF43888AC2120CA12 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = NuxbeShare/NuxbeShare.entitlements;
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = "$(inherited)";
+				DEVELOPMENT_TEAM = YS428GD6FU;
+				INFOPLIST_FILE = NuxbeShare/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.teamnifty.nuxbe.share;
+				PRODUCT_NAME = NuxbeShare;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -536,6 +675,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AC52C9220D052E8BDCBDC8AC /* Build configuration list for PBXNativeTarget "NuxbeShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C6A2493DF33C4A4A2B9F4D2B /* Release */,
+				DA13389FF43888AC2120CA12 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
