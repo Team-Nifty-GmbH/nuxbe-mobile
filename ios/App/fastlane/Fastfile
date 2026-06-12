@@ -180,28 +180,13 @@ platform :ios do
       key_filepath: File.expand_path(ENV['ASC_KEY_PATH']),
     )
 
-    # Register the share extension app id and the shared app group, then
-    # make sure both app ids carry the app group capability. All calls are
-    # idempotent - they no-op when the resources already exist.
-    require 'json'
-    key_file = File.expand_path("../asc_api_key.json")
-    File.write(key_file, {
-      key_id: ENV['ASC_KEY_ID'],
-      issuer_id: ENV['ASC_ISSUER_ID'],
-      key: File.read(File.expand_path(ENV['ASC_KEY_PATH'])),
-    }.to_json)
-
-    begin
-      base = "cd .. && bundle exec fastlane produce"
-      auth = "--api_key_path #{key_file.shellescape} --team_id YS428GD6FU"
-
-      sh("#{base} create -a com.teamnifty.nuxbe.share --app_name 'Nuxbe Share' --skip_itc #{auth} || true")
-      sh("#{base} group -g group.com.teamnifty.nuxbe -n 'Nuxbe' #{auth} || true")
-      sh("#{base} associate_group -a com.teamnifty.nuxbe group.com.teamnifty.nuxbe #{auth}")
-      sh("#{base} associate_group -a com.teamnifty.nuxbe.share group.com.teamnifty.nuxbe #{auth}")
-    ensure
-      File.delete(key_file) if File.exist?(key_file)
-    end
+    # Prerequisite (one-time, manual): the App Group cannot be managed with
+    # an App Store Connect API key - fastlane produce uses the legacy portal
+    # API with an Apple ID session for groups. In the developer portal:
+    #   1. Identifiers > App IDs: register com.teamnifty.nuxbe.share
+    #   2. Identifiers > App Groups: register group.com.teamnifty.nuxbe
+    #   3. Enable the App Groups capability with that group on BOTH app ids
+    UI.important("Requires com.teamnifty.nuxbe.share + group.com.teamnifty.nuxbe configured in the developer portal (see comment above)")
 
     # force: profiles must be regenerated when entitlements change (app group)
     match(type: "appstore", readonly: false, force: true, api_key: api_key)
