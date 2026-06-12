@@ -188,7 +188,7 @@ jobs:
           path: artifacts/android
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             artifacts/ios/*.ipa
