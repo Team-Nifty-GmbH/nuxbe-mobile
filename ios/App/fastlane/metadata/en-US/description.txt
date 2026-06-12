@@ -1,0 +1,38 @@
+Nuxbe - Your Mobile ERP System
+
+Nuxbe brings the power of your ERP system to your smartphone. Manage your business from anywhere - in the office, on the road, or on-site with customers.
+
+KEY FEATURES:
+
+- Order Management
+Create and edit quotes, orders, and invoices directly on your mobile device. Keep track of all orders in real-time.
+
+- Customer Management
+Access your customer data anytime. Contact information, order history, and communication in one place.
+
+- Project Management
+Track project progress, record work hours, and document project details directly on-site.
+
+- Inventory Management
+Check stock levels, record stock movements, and keep track of your items.
+
+- Time Tracking
+Record work hours on the go and assign them directly to projects or customers.
+
+- Document Management
+Access important documents and files directly from your mobile device.
+
+BENEFITS:
+
+- Mobile access to your complete ERP system
+- Intuitive operation, optimized for smartphones
+- Real-time data synchronization
+- Secure and GDPR compliant
+- Perfect for field service and mobile teams
+
+ABOUT NUXBE:
+
+Nuxbe is a comprehensive ERP system specifically developed for modern business processes. The mobile app provides seamless access to your business data on the go. By Team Nifty GmbH - your partner for professional business software.
+
+This app requires an existing Nuxbe ERP account. Contact us for more information about licensing and implementation.
+
