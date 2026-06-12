@@ -73,6 +73,33 @@ platform :ios do
     )
   end
 
+  desc "Submit existing IPA to the App Store (optionally for review)"
+  lane :release do
+    api_key = app_store_connect_api_key(
+      key_id: ENV['ASC_KEY_ID'],
+      issuer_id: ENV['ASC_ISSUER_ID'],
+      key_filepath: File.expand_path(ENV['ASC_KEY_PATH']),
+    )
+
+    ipa_path = ENV['IPA_PATH'] || Dir['./build/**/*.ipa'].map { |f| File.expand_path(f) }.first
+    UI.user_error!("No IPA file found") unless ipa_path
+
+    app_version = (ENV['APP_VERSION'] || '').delete_prefix('v').sub(/-.*/, '')
+
+    deliver(
+      api_key: api_key,
+      app_identifier: ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe",
+      ipa: ipa_path,
+      app_version: app_version.empty? ? nil : app_version,
+      submit_for_review: ENV['SUBMIT_FOR_REVIEW'] == 'true',
+      automatic_release: false,
+      skip_screenshots: true,
+      skip_metadata: true,
+      force: true,
+      precheck_include_in_app_purchases: false,
+    )
+  end
+
   desc "Upload screenshots to App Store Connect"
   lane :upload_screenshots do
     api_key = app_store_connect_api_key(
@@ -145,15 +172,15 @@ platform :ios do
 end
 
 platform :android do
-  desc "Upload AAB to Google Play (internal testing track)"
+  desc "Upload AAB to Google Play (track and release status via PLAY_TRACK / RELEASE_STATUS)"
   lane :upload do
     aab_path = ENV['AAB_PATH']
     UI.user_error!("No AAB file found - set AAB_PATH") unless aab_path
 
     upload_to_play_store(
       aab: aab_path,
-      track: "internal",
-      release_status: "draft",
+      track: ENV['PLAY_TRACK'] || "internal",
+      release_status: ENV['RELEASE_STATUS'] || "draft",
       json_key: ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH'],
       package_name: "com.teamnifty.nuxbe",
       skip_upload_metadata: true,

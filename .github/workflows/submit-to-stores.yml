@@ -1,0 +1,140 @@
+name: Submit to Stores
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release tag to submit (e.g. v1.2.0)'
+        required: true
+        type: string
+      platform:
+        description: 'Which platform(s) to submit'
+        required: true
+        type: choice
+        options:
+          - all
+          - ios
+          - android
+        default: all
+      ios_target:
+        description: 'iOS: TestFlight only, or App Store (submit for review)'
+        required: false
+        type: choice
+        options:
+          - testflight
+          - appstore
+        default: testflight
+      android_track:
+        description: 'Android Play Store track'
+        required: false
+        type: choice
+        options:
+          - internal
+          - production
+        default: internal
+      submit_for_review:
+        description: 'Submit for review / publish (App Store review, Play release completed instead of draft)'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: submit-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  submit-ios:
+    name: Submit iOS
+    if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
+    runs-on: [self-hosted, macOS]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby + Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios/App
+
+      - name: Download IPA from release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts/ios
+          gh release download ${{ inputs.version }} \
+            --repo ${{ github.repository }} \
+            --pattern '*.ipa' \
+            --dir artifacts/ios
+          ls -la artifacts/ios/
+
+      - name: Store App Store Connect API Key
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo '${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}' | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+
+      - name: Upload to TestFlight
+        if: ${{ inputs.ios_target == 'testflight' }}
+        working-directory: ios/App
+        run: |
+          export IPA_PATH=$(find ${{ github.workspace }}/artifacts/ios -name "*.ipa" | head -1)
+          bundle exec fastlane ios upload
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_KEY_PATH: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+
+      - name: Submit to App Store
+        if: ${{ inputs.ios_target == 'appstore' }}
+        working-directory: ios/App
+        run: |
+          export IPA_PATH=$(find ${{ github.workspace }}/artifacts/ios -name "*.ipa" | head -1)
+          bundle exec fastlane ios release
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_KEY_PATH: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          APP_VERSION: ${{ inputs.version }}
+          SUBMIT_FOR_REVIEW: ${{ inputs.submit_for_review }}
+
+  submit-android:
+    name: Submit Android
+    if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
+    runs-on: [self-hosted, macOS]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby + Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios/App
+
+      - name: Download AAB from release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts/android
+          gh release download ${{ inputs.version }} \
+            --repo ${{ github.repository }} \
+            --pattern '*.aab' \
+            --dir artifacts/android
+          ls -la artifacts/android/
+
+      - name: Submit to Play Store
+        working-directory: ios/App
+        run: |
+          export AAB_PATH=$(find ${{ github.workspace }}/artifacts/android -name "*.aab" | head -1)
+          export PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH="$RUNNER_TEMP/play-store-key.json"
+          echo '${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}' > "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
+          bundle exec fastlane android upload
+          rm -f "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
+        env:
+          PLAY_TRACK: ${{ inputs.android_track }}
+          RELEASE_STATUS: ${{ inputs.submit_for_review && 'completed' || 'draft' }}
