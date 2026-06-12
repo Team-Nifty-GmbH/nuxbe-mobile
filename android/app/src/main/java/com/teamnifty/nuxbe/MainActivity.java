@@ -2,6 +2,7 @@ package com.teamnifty.nuxbe;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,8 +31,25 @@ public class MainActivity extends BridgeActivity {
         patchJSInjection();
         setupPullToRefresh();
 
+        ShareIntentHandler.cleanupOldFiles(this);
+        ShareIntentHandler.handleIntent(this, getIntent());
+
         // Ensure the system handles the status bar - content below it
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        if (ShareIntentHandler.handleIntent(this, intent)) {
+            String serverUrl = getSavedServerUrl();
+            if (serverUrl != null && !serverUrl.isEmpty()) {
+                String target = serverUrl + "/mobile/share-target";
+                WebView webView = bridge.getWebView();
+                webView.post(() -> webView.loadUrl(target));
+            }
+        }
     }
 
     private void setupPullToRefresh() {

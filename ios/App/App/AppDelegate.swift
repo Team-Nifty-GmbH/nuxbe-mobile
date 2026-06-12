@@ -2,6 +2,7 @@ import UIKit
 import Capacitor
 import Firebase
 import FirebaseMessaging
+import UniformTypeIdentifiers
 
 // Capacitor Notification Names Extension
 extension Notification.Name {
@@ -117,9 +118,96 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        // Files opened via "Open in Nuxbe" (Files, Mail, ...) arrive as file URLs.
+        // They are cached for the Flux share target page, mirroring the Android ShareIntentHandler.
+        if url.isFileURL {
+            handleSharedFile(url: url)
+            return true
+        }
+
         // Called when the app was launched with a url. Feel free to add additional processing here,
         // but if you want the App API to support tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
+    }
+
+    // MARK: - Share Target Handling
+
+    private func handleSharedFile(url: URL) {
+        let needsScope = url.startAccessingSecurityScopedResource()
+        defer {
+            if needsScope {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        let fileManager = FileManager.default
+
+        guard let cachesDir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            return
+        }
+
+        let sharedDir = cachesDir.appendingPathComponent("shared_files", isDirectory: true)
+        try? fileManager.removeItem(at: sharedDir)
+
+        do {
+            try fileManager.createDirectory(at: sharedDir, withIntermediateDirectories: true)
+        } catch {
+            print("SHARE: Failed to create shared_files directory: \(error)")
+            return
+        }
+
+        let stamp = Int(Date().timeIntervalSince1970 * 1000)
+        let sanitizedName = url.lastPathComponent.replacingOccurrences(
+            of: "[^a-zA-Z0-9._-]",
+            with: "_",
+            options: .regularExpression
+        )
+        let target = sharedDir.appendingPathComponent("\(stamp)_0_\(sanitizedName)")
+
+        do {
+            try fileManager.copyItem(at: url, to: target)
+        } catch {
+            print("SHARE: Failed to copy shared file: \(error)")
+            return
+        }
+
+        let size = ((try? fileManager.attributesOfItem(atPath: target.path)[.size] as? NSNumber) ?? nil)?.intValue ?? 0
+        let mimeType = UTType(filenameExtension: url.pathExtension)?.preferredMIMEType ?? "application/octet-stream"
+
+        let meta: [[String: Any]] = [[
+            "name": url.lastPathComponent,
+            "mimeType": mimeType,
+            "size": size,
+            "path": "shared_files/\(target.lastPathComponent)",
+        ]]
+
+        guard let data = try? JSONSerialization.data(withJSONObject: meta),
+              let json = String(data: data, encoding: .utf8) else {
+            return
+        }
+
+        UserDefaults.standard.set(json, forKey: "CapacitorStorage.pending_shared_files")
+        UserDefaults.standard.set("1", forKey: "CapacitorStorage.pending_share_redirect")
+        print("SHARE: Cached shared file \(url.lastPathComponent)")
+
+        navigateToShareTargetIfRunning()
+    }
+
+    private func navigateToShareTargetIfRunning() {
+        guard let serverUrl = UserDefaults.standard.string(forKey: "CapacitorStorage.server_url"),
+              !serverUrl.isEmpty,
+              let bridgeViewController = window?.rootViewController as? CAPBridgeViewController,
+              let webView = bridgeViewController.webView,
+              let currentHost = webView.url?.host,
+              let serverHost = URL(string: serverUrl)?.host,
+              currentHost == serverHost,
+              let target = URL(string: serverUrl + "/mobile/share-target") else {
+            return
+        }
+
+        DispatchQueue.main.async {
+            webView.load(URLRequest(url: target))
+        }
     }
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
