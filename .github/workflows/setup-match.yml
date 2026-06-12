@@ -3,11 +3,11 @@ name: Setup Match Signing
 on:
   workflow_dispatch:
     inputs:
-      revoke_orphaned:
-        description: 'Revoke distribution certificates created today before bootstrapping (frees a slot after a failed run)'
+      revoke_certificate_id:
+        description: 'Revoke this specific certificate id before bootstrapping (only for confirmed orphans - certificates are team-wide)'
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: ''
 
 jobs:
   bootstrap:
@@ -30,11 +30,12 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys
           echo '${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}' | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
 
-      - name: Revoke orphaned certificates
-        if: ${{ inputs.revoke_orphaned }}
+      - name: Revoke certificate
+        if: ${{ inputs.revoke_certificate_id != '' }}
         working-directory: ios/App
-        run: bundle exec fastlane ios revoke_orphaned_certs
+        run: bundle exec fastlane ios revoke_certificate
         env:
+          CERTIFICATE_ID: ${{ inputs.revoke_certificate_id }}
           ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           ASC_KEY_PATH: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
