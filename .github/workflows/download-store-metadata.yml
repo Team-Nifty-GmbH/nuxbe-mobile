@@ -1,0 +1,63 @@
+name: Download Store Metadata
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download:
+    name: Download metadata from both stores
+    runs-on: [self-hosted, macOS]
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby + Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios/App
+
+      - name: Store App Store Connect API Key
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo '${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}' | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+
+      - name: Download App Store metadata
+        working-directory: ios/App
+        run: bundle exec fastlane ios download_metadata
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_KEY_PATH: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+
+      - name: Download Play Store metadata
+        working-directory: ios/App
+        run: |
+          export PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH="$RUNNER_TEMP/play-store-key.json"
+          echo '${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}' > "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
+          bundle exec fastlane supply init --json_key "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH" --package_name com.teamnifty.nuxbe --metadata_path ./fastlane/metadata/android
+          rm -f "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
+
+      - name: Open pull request with metadata
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet && [ -z "$(git status --porcelain ios/App/fastlane/metadata)" ]; then
+            echo "No metadata changes"
+            exit 0
+          fi
+          BRANCH="chore/store-metadata-$(date +%Y%m%d%H%M)"
+          git checkout -b "$BRANCH"
+          git add ios/App/fastlane/metadata
+          git -c user.name="github-actions[bot]" -c user.email="github-actions[bot]@users.noreply.github.com" \
+            commit -m "Import store metadata from App Store Connect and Google Play"
+          git push origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "Import store metadata" \
+            --body "Downloaded current store listings (descriptions, release notes) from App Store Connect and Google Play so they can be maintained in the repo. Future submissions upload these texts automatically."

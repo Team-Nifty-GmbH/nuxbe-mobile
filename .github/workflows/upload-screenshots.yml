@@ -1,0 +1,103 @@
+name: Upload Screenshots to Stores
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Which store(s) to upload screenshots to'
+        required: true
+        type: choice
+        options:
+          - all
+          - ios
+          - android
+        default: all
+
+jobs:
+  upload-ios:
+    name: Upload iOS Screenshots
+    if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
+    runs-on: [self-hosted, macOS]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby + Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios/App
+
+      - name: Download screenshots artifact
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: mobile-screenshots.yml
+          name: nuxbe-mobile-app-screenshots
+          path: ios/App/fastlane/screenshots
+          search_artifacts: true
+          if_no_artifact_found: fail
+
+      - name: Remove Android screenshots from App Store set
+        run: find ios/App/fastlane/screenshots -name "Android *" -delete
+
+      - name: Store App Store Connect API Key
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo '${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}' | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+
+      - name: Upload to App Store Connect
+        working-directory: ios/App
+        run: bundle exec fastlane ios upload_screenshots
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_KEY_PATH: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+
+  upload-android:
+    name: Upload Android Screenshots
+    if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
+    runs-on: [self-hosted, macOS]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby + Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios/App
+
+      - name: Download screenshots artifact
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: mobile-screenshots.yml
+          name: nuxbe-mobile-app-screenshots
+          path: screenshots-raw
+          search_artifacts: true
+          if_no_artifact_found: fail
+
+      - name: Sort Android screenshots into Play metadata structure
+        run: |
+          base=ios/App/fastlane/metadata/android
+          for locale in screenshots-raw/*/; do
+            locale=$(basename "$locale")
+            images="$base/$locale/images"
+            mkdir -p "$images/phoneScreenshots" "$images/sevenInchScreenshots" "$images/tenInchScreenshots"
+            cp screenshots-raw/"$locale"/"Android Phone-"*.png "$images/phoneScreenshots/" 2>/dev/null || true
+            cp screenshots-raw/"$locale"/"Android 7-inch Tablet-"*.png "$images/sevenInchScreenshots/" 2>/dev/null || true
+            cp screenshots-raw/"$locale"/"Android 10-inch Tablet-"*.png "$images/tenInchScreenshots/" 2>/dev/null || true
+          done
+          find ios/App/fastlane/metadata/android -name "*.png" | head -20
+
+      - name: Upload to Google Play
+        working-directory: ios/App
+        run: |
+          export PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH="$RUNNER_TEMP/play-store-key.json"
+          echo '${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}' > "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
+          bundle exec fastlane android upload_screenshots
+          rm -f "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"

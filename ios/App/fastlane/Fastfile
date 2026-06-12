@@ -86,6 +86,9 @@ platform :ios do
 
     app_version = (ENV['APP_VERSION'] || '').delete_prefix('v').sub(/-.*/, '')
 
+    # Upload metadata and release notes when the repo contains them
+    has_metadata = File.directory?(File.expand_path("./fastlane/metadata"))
+
     deliver(
       api_key: api_key,
       app_identifier: ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe",
@@ -94,9 +97,29 @@ platform :ios do
       submit_for_review: ENV['SUBMIT_FOR_REVIEW'] == 'true',
       automatic_release: false,
       skip_screenshots: true,
-      skip_metadata: true,
+      skip_metadata: !has_metadata,
+      run_precheck_before_submit: true,
       force: true,
       precheck_include_in_app_purchases: false,
+    )
+  end
+
+  desc "Download App Store metadata into the repo"
+  lane :download_metadata do
+    api_key = app_store_connect_api_key(
+      key_id: ENV['ASC_KEY_ID'],
+      issuer_id: ENV['ASC_ISSUER_ID'],
+      key_filepath: File.expand_path(ENV['ASC_KEY_PATH']),
+    )
+
+    deliver(
+      api_key: api_key,
+      app_identifier: ENV['APP_IDENTIFIER'] || "com.teamnifty.nuxbe",
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      skip_metadata: true,
+      force: true,
+      download_metadata: true,
     )
   end
 
@@ -177,16 +200,57 @@ platform :android do
     aab_path = ENV['AAB_PATH']
     UI.user_error!("No AAB file found - set AAB_PATH") unless aab_path
 
+    # Upload changelogs when the repo contains Play metadata
+    has_metadata = File.directory?(File.expand_path("./fastlane/metadata/android"))
+
     upload_to_play_store(
       aab: aab_path,
       track: ENV['PLAY_TRACK'] || "internal",
       release_status: ENV['RELEASE_STATUS'] || "draft",
       json_key: ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH'],
       package_name: "com.teamnifty.nuxbe",
+      metadata_path: has_metadata ? "./fastlane/metadata/android" : nil,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: !has_metadata,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+
+  desc "Promote the latest internal build to production without re-uploading"
+  lane :promote do
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "production",
+      track_promote_release_status: ENV['RELEASE_STATUS'] || "completed",
+      json_key: ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH'],
+      package_name: "com.teamnifty.nuxbe",
+      skip_upload_aab: true,
+      skip_upload_apk: true,
       skip_upload_metadata: true,
       skip_upload_changelogs: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
     )
+  end
+
+  desc "Upload screenshots to Google Play"
+  lane :upload_screenshots do
+    upload_to_play_store(
+      package_name: "com.teamnifty.nuxbe",
+      json_key: ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH'],
+      metadata_path: ENV['METADATA_PATH'] || "./fastlane/metadata/android",
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: false,
+    )
+  end
+
+  desc "Download Play Store metadata into the repo"
+  lane :download_metadata do
+    sh("cd .. && bundle exec fastlane supply init --json_key #{ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH']} --package_name com.teamnifty.nuxbe --metadata_path ./fastlane/metadata/android")
   end
 end
