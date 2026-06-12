@@ -1,0 +1,39 @@
+name: Promote Play Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_status:
+        description: 'Release status after promotion'
+        required: true
+        type: choice
+        options:
+          - completed
+          - draft
+        default: completed
+
+jobs:
+  promote:
+    name: Promote internal build to production
+    runs-on: [self-hosted, macOS]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby + Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios/App
+
+      - name: Promote to production
+        working-directory: ios/App
+        run: |
+          export PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH="$RUNNER_TEMP/play-store-key.json"
+          echo '${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}' > "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
+          bundle exec fastlane android promote
+          rm -f "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
+        env:
+          RELEASE_STATUS: ${{ inputs.release_status }}
