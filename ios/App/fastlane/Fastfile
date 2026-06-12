@@ -201,9 +201,10 @@ platform :ios do
     match(type: "development", readonly: true)
   end
 
-  desc "Revoke distribution certificates created today (orphaned bootstrap attempts)"
-  lane :revoke_orphaned_certs do
-    require 'time'
+  desc "Revoke a single certificate by id (use only for confirmed orphans)"
+  lane :revoke_certificate do |options|
+    cert_id = options[:certificate_id] || ENV['CERTIFICATE_ID']
+    UI.user_error!("Pass certificate_id - this is intentionally explicit, certificates are shared across the whole Apple team") if cert_id.to_s.empty?
 
     api_key = app_store_connect_api_key(
       key_id: ENV['ASC_KEY_ID'],
@@ -214,17 +215,11 @@ platform :ios do
     token = Spaceship::ConnectAPI::Token.from(hash: api_key)
     Spaceship::ConnectAPI.token = token
 
-    # A distribution certificate is valid for one year. Anything expiring more
-    # than 363 days from now was created today - i.e. by a failed bootstrap.
-    threshold = Time.now + (363 * 24 * 60 * 60)
+    cert = Spaceship::ConnectAPI::Certificate.all.find { |c| c.id == cert_id }
+    UI.user_error!("Certificate #{cert_id} not found") unless cert
 
-    Spaceship::ConnectAPI::Certificate.all
-      .select { |cert| cert.certificate_type == "DISTRIBUTION" }
-      .select { |cert| Time.parse(cert.expiration_date) > threshold }
-      .each do |cert|
-        UI.important("Revoking orphaned distribution certificate #{cert.id} (expires #{cert.expiration_date})")
-        Spaceship::ConnectAPI.delete_certificate(certificate_id: cert.id)
-      end
+    UI.important("Revoking certificate #{cert.id} (#{cert.certificate_type}, expires #{cert.expiration_date})")
+    Spaceship::ConnectAPI.delete_certificate(certificate_id: cert.id)
   end
 
   desc "Create or renew certificates and profiles in the match repo (CI bootstrap)"
