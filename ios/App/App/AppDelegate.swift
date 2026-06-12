@@ -111,6 +111,81 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+
+        // The share extension cannot always open the app - pick up pending
+        // shared files whenever the app comes to the foreground.
+        processShareInbox()
+    }
+
+    // MARK: - Share Extension Inbox
+
+    /// Moves files the share extension left in the app group container into the
+    /// Capacitor cache and stores the same preference keys the Android
+    /// ShareIntentHandler uses, then navigates to the share target page.
+    private func processShareInbox() {
+        let fileManager = FileManager.default
+
+        guard let container = fileManager.containerURL(forSecurityApplicationGroupIdentifier: "group.com.teamnifty.nuxbe") else {
+            return
+        }
+
+        let metaUrl = container.appendingPathComponent("share_inbox.json")
+        let inbox = container.appendingPathComponent("share_inbox", isDirectory: true)
+
+        guard let data = try? Data(contentsOf: metaUrl),
+              let entries = (try? JSONSerialization.jsonObject(with: data)) as? [[String: Any]],
+              !entries.isEmpty,
+              let cachesDir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            return
+        }
+
+        let sharedDir = cachesDir.appendingPathComponent("shared_files", isDirectory: true)
+        try? fileManager.removeItem(at: sharedDir)
+
+        do {
+            try fileManager.createDirectory(at: sharedDir, withIntermediateDirectories: true)
+        } catch {
+            print("SHARE: Failed to create shared_files directory: \(error)")
+            return
+        }
+
+        var meta: [[String: Any]] = []
+
+        for entry in entries {
+            guard let fileName = entry["path"] as? String else { continue }
+
+            let source = inbox.appendingPathComponent(fileName)
+            let target = sharedDir.appendingPathComponent(fileName)
+
+            do {
+                try fileManager.moveItem(at: source, to: target)
+            } catch {
+                print("SHARE: Failed to move shared file from inbox: \(error)")
+                continue
+            }
+
+            meta.append([
+                "name": entry["name"] ?? fileName,
+                "mimeType": entry["mimeType"] ?? "application/octet-stream",
+                "size": entry["size"] ?? 0,
+                "path": "shared_files/\(fileName)",
+            ])
+        }
+
+        try? fileManager.removeItem(at: metaUrl)
+        try? fileManager.removeItem(at: inbox)
+
+        guard !meta.isEmpty,
+              let json = try? JSONSerialization.data(withJSONObject: meta),
+              let jsonString = String(data: json, encoding: .utf8) else {
+            return
+        }
+
+        UserDefaults.standard.set(jsonString, forKey: "CapacitorStorage.pending_shared_files")
+        UserDefaults.standard.set("1", forKey: "CapacitorStorage.pending_share_redirect")
+        print("SHARE: Imported \(meta.count) shared file(s) from extension inbox")
+
+        navigateToShareTargetIfRunning()
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
@@ -122,6 +197,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
         // They are cached for the Flux share target page, mirroring the Android ShareIntentHandler.
         if url.isFileURL {
             handleSharedFile(url: url)
+            return true
+        }
+
+        // Hand-off from the share extension: files are waiting in the app group inbox
+        if url.scheme == "nuxbe" && url.host == "share-target" {
+            processShareInbox()
             return true
         }
 
