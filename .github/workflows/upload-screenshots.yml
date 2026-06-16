@@ -31,7 +31,7 @@ jobs:
           working-directory: ios/App
 
       - name: Download screenshots artifact
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v21
         with:
           workflow: mobile-screenshots.yml
           name: nuxbe-mobile-app-screenshots
@@ -73,7 +73,7 @@ jobs:
           working-directory: ios/App
 
       - name: Download screenshots artifact
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v21
         with:
           workflow: mobile-screenshots.yml
           name: nuxbe-mobile-app-screenshots
