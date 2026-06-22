@@ -6,6 +6,7 @@ import { Camera } from '@capacitor/camera';
 import { App } from '@capacitor/app';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Device } from '@capacitor/device';
+import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import packageJson from '../package.json';
 import { t, updateUI } from './i18n.js';
@@ -498,7 +499,25 @@ class NuxbeApp {
             return deviceId;
         }
 
-        // Native: use Capacitor Device ID
+        // iOS: persist the device id in the Keychain so it survives app
+        // reinstalls. Device.getId() returns the IDFV, which resets on every
+        // reinstall and would create a new device token each time.
+        if (Capacitor.getPlatform() === 'ios') {
+            const stored = await SecureStorage.get('nuxbe_device_id').catch(() => null);
+            if (typeof stored === 'string' && stored) {
+                return stored;
+            }
+
+            // First run: seed from the platform identifier so an existing token
+            // carries over instead of creating a duplicate.
+            const info = await Device.getId();
+            const deviceId = info?.identifier || this.generateUUID();
+            await SecureStorage.set('nuxbe_device_id', deviceId);
+
+            return deviceId;
+        }
+
+        // Android: Device.getId() returns a stable id that survives reinstalls.
         const info = await Device.getId();
         return info.identifier;
     }
