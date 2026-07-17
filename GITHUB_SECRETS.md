@@ -20,31 +20,22 @@ All sensitive files MUST be provided via GitHub Secrets in CI/CD workflows.
 
 ## iOS Secrets
 
-### Code Signing
+### Code Signing (fastlane match)
 
-- **`IOS_DISTRIBUTION_CERT_P12`** (Required for Release)
-  - Base64 encoded .p12 distribution certificate
-  - Generate: `base64 -i YourDistributionCert.p12 | pbcopy`
+iOS signing runs entirely through [fastlane match](https://docs.fastlane.tools/actions/match/).
+Certificates and provisioning profiles live encrypted in the private
+`Team-Nifty-GmbH/nuxbe-certificates` repo — no cert or profile secrets are
+stored per repository.
 
-- **`IOS_DISTRIBUTION_CERT_PASSWORD`** (Required for Release)
-  - Password for the distribution certificate .p12 file
+- **`MATCH_PASSWORD`** (org secret)
+  - Passphrase for the encrypted certificates repo. Unrecoverable if lost —
+    it is backed up in 1Password ("TN Mobile Signing").
 
-- **`IOS_DEVELOPMENT_CERT_P12`** (Required for Nightly)
-  - Base64 encoded .p12 development certificate
-  - Generate: `base64 -i YourDevelopmentCert.p12 | pbcopy`
+- **`MATCH_GIT_BASIC_AUTHORIZATION`** (org secret)
+  - `base64("x-access-token:<PAT with repo read access to nuxbe-certificates>")`
 
-- **`IOS_DEVELOPMENT_CERT_PASSWORD`** (Required for Nightly)
-  - Password for the development certificate .p12 file
-
-### Provisioning Profiles
-
-- **`IOS_PROVISION_PROFILE`** (Required for Release)
-  - Base64 encoded App Store provisioning profile
-  - Generate: `base64 -i YourAppStore.mobileprovision | pbcopy`
-
-- **`IOS_DEVELOPMENT_PROVISION_PROFILE`** (Required for Nightly)
-  - Base64 encoded Development provisioning profile
-  - Generate: `base64 -i YourDevelopment.mobileprovision | pbcopy`
+To (re)create the certs/profiles in the match repo, run the
+`setup-match.yml` workflow (uses `fastlane ios bootstrap_signing`).
 
 ### Google Services (CRITICAL for Public Repos!)
 
@@ -79,19 +70,10 @@ All sensitive files MUST be provided via GitHub Secrets in CI/CD workflows.
   - App-specific password for Apple ID
   - Generate: https://appleid.apple.com/account/manage
 
-- **`MATCH_PASSWORD`** (Optional, if using Fastlane Match)
-  - Password for Fastlane Match encryption
-
 ### Environment Variables
 
 - **`APP_IDENTIFIER`**
   - Bundle identifier (e.g., `com.nuxbe.mobile`)
-
-- **`PROVISIONING_PROFILE_SPECIFIER`**
-  - Name of the provisioning profile for App Store
-
-- **`DEV_PROVISIONING_PROFILE_SPECIFIER`**
-  - Name of the provisioning profile for Development
 
 ## Android Secrets
 
@@ -131,17 +113,10 @@ All sensitive files MUST be provided via GitHub Secrets in CI/CD workflows.
 
 ## Generating Required Files
 
-### iOS Distribution Certificate (.p12)
+### iOS Certificates
 
-```bash
-# Export from Keychain Access
-1. Open Keychain Access
-2. Select "My Certificates"
-3. Right-click your distribution certificate
-4. Export → .p12 format
-5. Set a password
-6. Convert to base64: base64 -i cert.p12 | pbcopy
-```
+Managed by fastlane match — nothing to export manually. Rotate or recreate via
+the `setup-match.yml` workflow.
 
 ### Android Keystore
 
