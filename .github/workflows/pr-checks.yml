@@ -19,12 +19,23 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # The post step of a persisted checkout rewrites `.git/config` as root, after
+          # the cleanup below, leaving the one file that breaks the next job's checkout.
+          persist-credentials: false
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build web assets
         run: npm run build
+
+      # This job runs in a container, as root; the runner's own jobs run as uid 1000.
+      # Every file left behind as root is one the next non-container job cannot clean,
+      # and its checkout then dies with EACCES on a workspace it does not own.
+      - name: Hand the workspace back to the runner
+        if: always()
+        run: chown -R 1000:1000 "$GITHUB_WORKSPACE" "$RUNNER_TEMP" "$RUNNER_TOOL_CACHE" || true
 
   build-android:
     name: Build Android (debug)
@@ -36,6 +47,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # The post step of a persisted checkout rewrites `.git/config` as root, after
+          # the cleanup below, leaving the one file that breaks the next job's checkout.
+          persist-credentials: false
 
       - name: Install dependencies
         run: npm ci
@@ -46,3 +61,10 @@ jobs:
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug
+
+      # This job runs in a container, as root; the runner's own jobs run as uid 1000.
+      # Every file left behind as root is one the next non-container job cannot clean,
+      # and its checkout then dies with EACCES on a workspace it does not own.
+      - name: Hand the workspace back to the runner
+        if: always()
+        run: chown -R 1000:1000 "$GITHUB_WORKSPACE" "$RUNNER_TEMP" "$RUNNER_TOOL_CACHE" || true

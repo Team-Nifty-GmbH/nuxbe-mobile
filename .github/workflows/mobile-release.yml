@@ -101,6 +101,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # The post step of a persisted checkout rewrites `.git/config` as root, after
+          # the cleanup below, leaving the one file that breaks the next job's checkout.
+          persist-credentials: false
 
       - name: Set version from tag
         run: |
@@ -159,6 +163,13 @@ jobs:
           name: android-apk
           path: android/app/build/outputs/apk/release/*.apk
           retention-days: 30
+
+      # This job runs in a container, as root; the runner's own jobs run as uid 1000.
+      # Every file left behind as root is one the next non-container job cannot clean,
+      # and its checkout then dies with EACCES on a workspace it does not own.
+      - name: Hand the workspace back to the runner
+        if: always()
+        run: chown -R 1000:1000 "$GITHUB_WORKSPACE" "$RUNNER_TEMP" "$RUNNER_TOOL_CACHE" || true
 
   create-release:
     name: Create GitHub Release
