@@ -69,6 +69,13 @@ freeline.py
 freeline/
 freeline_project_description.json
 
+# Play Store service account written by CI
+play-store-key.json
+
+# Bundler
+.bundle/
+vendor/bundle/
+
 # fastlane
 fastlane/report.xml
 fastlane/Preview.html

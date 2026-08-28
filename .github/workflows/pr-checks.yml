@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         run: npm ci
@@ -26,16 +26,26 @@ jobs:
       - name: Build web assets
         run: npm run build
 
+      # This job runs in a root container, so every file it writes into the
+      # shared runner workspace is root-owned. A later host-side job then fails
+      # `git clean` with EACCES. Hand the workspace back to the runner user
+      # (uid/gid 1000) so it stays cleanable.
+      - name: Return workspace ownership to the runner
+        if: always()
+        run: chown -R 1000:1000 "$GITHUB_WORKSPACE" || true
+
   build-android:
     name: Build Android (debug)
     runs-on: [self-hosted, Linux]
     container:
       image: cimg/android:2026.03.1-node
       options: --user root
+    env:
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         run: npm ci
@@ -46,3 +56,7 @@ jobs:
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug
+
+      - name: Return workspace ownership to the runner
+        if: always()
+        run: chown -R 1000:1000 "$GITHUB_WORKSPACE" || true

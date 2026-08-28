@@ -6,19 +6,19 @@ on:
 jobs:
   download:
     name: Download metadata from both stores
-    runs-on: [self-hosted, macOS]
+    runs-on: [self-hosted, macOS, ARM64]
     permissions:
       contents: write
       pull-requests: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Ruby + Fastlane
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: '3.3'
           bundler-cache: true
           working-directory: ios/App
 
@@ -36,25 +36,30 @@ jobs:
           ASC_KEY_PATH: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
           APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
 
+      - name: Install fastlane for Android
+        working-directory: android
+        run: bundle install
+
       - name: Download Play Store metadata
-        working-directory: ios/App
+        working-directory: android
         run: |
           export PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH="$RUNNER_TEMP/play-store-key.json"
           echo '${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}' > "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
-          bundle exec fastlane supply init --json_key "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH" --package_name com.teamnifty.nuxbe --metadata_path ./fastlane/metadata/android
-          rm -f "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
+          trap 'rm -f "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"' EXIT
+          bundle exec fastlane android download_metadata
 
       - name: Open pull request with metadata
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if git diff --quiet && [ -z "$(git status --porcelain ios/App/fastlane/metadata)" ]; then
+          METADATA_PATHS="ios/App/fastlane/metadata android/fastlane/metadata"
+          if [ -z "$(git status --porcelain $METADATA_PATHS)" ]; then
             echo "No metadata changes"
             exit 0
           fi
           BRANCH="chore/store-metadata-$(date +%Y%m%d%H%M)"
           git checkout -b "$BRANCH"
-          git add ios/App/fastlane/metadata
+          git add $METADATA_PATHS
           git -c user.name="github-actions[bot]" -c user.email="github-actions[bot]@users.noreply.github.com" \
             commit -m "Import store metadata from App Store Connect and Google Play"
           git push origin "$BRANCH"

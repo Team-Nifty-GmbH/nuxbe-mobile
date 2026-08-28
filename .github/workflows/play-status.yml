@@ -9,21 +9,22 @@ on:
 jobs:
   status:
     name: Report active releases per track
-    runs-on: [self-hosted, macOS]
+    runs-on: [self-hosted, Linux]
+    env:
+      PATH: /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Setup Ruby + Fastlane
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          bundler-cache: true
-          working-directory: ios/App
+      - name: Install fastlane (system Ruby)
+        working-directory: android
+        run: |
+          bundle config set --local path vendor/bundle
+          bundle install
 
       - name: Report track status
-        working-directory: ios/App
+        working-directory: android
         run: |
           export PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH="$RUNNER_TEMP/play-store-key.json"
           echo '${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}' > "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"

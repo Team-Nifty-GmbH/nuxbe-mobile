@@ -1,0 +1,124 @@
+# Fastfile for the Nuxbe Mobile Android app
+
+default_platform(:android)
+
+platform :android do
+  desc "Upload AAB to Google Play (track and release status via PLAY_TRACK / RELEASE_STATUS)"
+  lane :upload do
+    aab_path = ENV['AAB_PATH']
+    UI.user_error!("No AAB file found - set AAB_PATH") unless aab_path
+
+    # Upload changelogs when the repo contains Play metadata
+    has_metadata = File.directory?(File.expand_path("metadata/android", __dir__))
+
+    upload_to_play_store(
+      aab: aab_path,
+      track: ENV['PLAY_TRACK'] || "internal",
+      release_status: ENV['RELEASE_STATUS'] || "draft",
+      json_key: ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH'],
+      package_name: "com.teamnifty.nuxbe",
+      metadata_path: has_metadata ? "./fastlane/metadata/android" : nil,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: !has_metadata,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+
+  desc "Promote the latest internal build to production without re-uploading"
+  lane :promote do
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "production",
+      track_promote_release_status: ENV['RELEASE_STATUS'] || "completed",
+      json_key: ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH'],
+      package_name: "com.teamnifty.nuxbe",
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+
+  desc "Upload screenshots to Google Play"
+  lane :upload_screenshots do
+    upload_to_play_store(
+      package_name: "com.teamnifty.nuxbe",
+      json_key: ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH'],
+      metadata_path: ENV['METADATA_PATH'] || "./fastlane/metadata/android",
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: false,
+    )
+  end
+
+  desc "Report which version codes are still active on each Play track"
+  lane :play_status do
+    json_key = ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH']
+    UI.user_error!("Set PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH") if json_key.to_s.empty?
+
+    # Version codes are minutes since the epoch (see the release workflow), so
+    # they sort chronologically. targetSdkVersion moved 35 -> 36 on 2026-06-12,
+    # and this is the code that boundary falls on. Anything below it still
+    # targets 35 and keeps Google's "update your target API level" warning
+    # alive, whichever track it sits on.
+    target_sdk_36_since = 29_687_760
+    stale_found = false
+
+    %w[production beta alpha internal].each do |track|
+      codes = begin
+        google_play_track_version_codes(
+          package_name: "com.teamnifty.nuxbe",
+          track: track,
+          json_key: json_key,
+        )
+      rescue StandardError => e
+        # A track that was never used raises rather than returning nothing.
+        UI.message("#{track}: not readable (#{e.message})")
+        next
+      end
+
+      if codes.nil? || codes.empty?
+        UI.message("#{track}: no active release")
+        next
+      end
+
+      names = begin
+        google_play_track_release_names(
+          package_name: "com.teamnifty.nuxbe",
+          track: track,
+          json_key: json_key,
+        )
+      rescue StandardError
+        []
+      end
+
+      suffix = names.empty? ? "" : " (#{names.join(', ')})"
+      UI.message("#{track}: #{codes.join(', ')}#{suffix}")
+
+      stale = codes.select { |c| c.to_i < target_sdk_36_since }
+      if stale.empty?
+        UI.success("  all on targetSdk 36")
+      else
+        stale_found = true
+        UI.important("  targetSdk 35 still active here: #{stale.join(', ')}")
+      end
+    end
+
+    if stale_found
+      UI.important("Deactivate or supersede the releases listed above - they are what Google is warning about.")
+    else
+      UI.success("No track carries a targetSdk 35 release.")
+    end
+  end
+
+  desc "Download Play Store metadata into the repo"
+  lane :download_metadata do
+    sh("cd .. && bundle exec fastlane supply init --json_key #{ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH']} --package_name com.teamnifty.nuxbe --metadata_path ./fastlane/metadata/android")
+  end
+end

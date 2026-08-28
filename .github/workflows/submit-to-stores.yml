@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release tag to submit (e.g. v1.2.0)'
+        description: 'Release tag to submit (e.g. v1.3.1)'
         required: true
         type: string
       platform:
@@ -51,16 +51,16 @@ jobs:
   submit-ios:
     name: Submit iOS
     if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
-    runs-on: [self-hosted, macOS]
+    runs-on: [self-hosted, macOS, ARM64]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Ruby + Fastlane
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: '3.3'
           bundler-cache: true
           working-directory: ios/App
 
@@ -112,18 +112,21 @@ jobs:
   submit-android:
     name: Submit Android
     if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
-    runs-on: [self-hosted, macOS]
+    runs-on: [self-hosted, Linux]
+    env:
+      # The runner's default PATH picks up toolchains left by container jobs.
+      # Pin it so bundler resolves against the system Ruby.
+      PATH: /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Setup Ruby + Fastlane
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          bundler-cache: true
-          working-directory: ios/App
+      - name: Install fastlane (system Ruby)
+        working-directory: android
+        run: |
+          bundle config set --local path vendor/bundle
+          bundle install
 
       - name: Download AAB from release
         env:
@@ -137,13 +140,13 @@ jobs:
           ls -la artifacts/android/
 
       - name: Submit to Play Store
-        working-directory: ios/App
+        working-directory: android
         run: |
           export AAB_PATH=$(find ${{ github.workspace }}/artifacts/android -name "*.aab" | head -1)
           export PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH="$RUNNER_TEMP/play-store-key.json"
           echo '${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}' > "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
+          trap 'rm -f "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"' EXIT
           bundle exec fastlane android upload
-          rm -f "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
         env:
           PLAY_TRACK: ${{ inputs.android_track }}
           RELEASE_STATUS: ${{ inputs.submit_for_review && 'completed' || 'draft' }}
