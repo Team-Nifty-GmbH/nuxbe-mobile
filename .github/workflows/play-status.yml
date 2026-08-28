@@ -1,0 +1,31 @@
+name: Play Track Status
+
+# Reports which version codes are still active on each Play track, so a stale
+# release holding back the target API level can be found without opening the
+# console.
+on:
+  workflow_dispatch:
+
+jobs:
+  status:
+    name: Report active releases per track
+    runs-on: [self-hosted, macOS]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby + Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios/App
+
+      - name: Report track status
+        working-directory: ios/App
+        run: |
+          export PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH="$RUNNER_TEMP/play-store-key.json"
+          echo '${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}' > "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"
+          trap 'rm -f "$PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH"' EXIT
+          bundle exec fastlane android play_status
