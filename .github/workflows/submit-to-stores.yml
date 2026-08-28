@@ -113,20 +113,17 @@ jobs:
     name: Submit Android
     if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
     runs-on: [self-hosted, Linux]
-    env:
-      # The runner's default PATH picks up toolchains left by container jobs.
-      # Pin it so bundler resolves against the system Ruby.
-      PATH: /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Install fastlane (system Ruby)
-        working-directory: android
-        run: |
-          bundle config set --local path vendor/bundle
-          bundle install
+      - name: Setup Ruby + Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: android
 
       - name: Download AAB from release
         env:
