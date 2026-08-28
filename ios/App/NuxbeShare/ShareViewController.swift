@@ -96,13 +96,19 @@ class ShareViewController: UIViewController {
         group.notify(queue: .main) { [weak self] in
             guard let self else { return }
 
-            if !meta.isEmpty,
-               let data = try? JSONSerialization.data(withJSONObject: meta) {
-                try? data.write(to: container.appendingPathComponent("share_inbox.json"))
-                self.openMainApp()
+            guard !meta.isEmpty,
+                  let data = try? JSONSerialization.data(withJSONObject: meta) else {
+                self.complete()
+                return
             }
 
-            self.complete()
+            try? data.write(to: container.appendingPathComponent("share_inbox.json"))
+
+            // Completing the request tears the extension down, so it has to wait
+            // for the open call to answer.
+            self.openMainApp { [weak self] in
+                self?.complete()
+            }
         }
     }
 
@@ -187,20 +193,24 @@ class ShareViewController: UIViewController {
         return nil
     }
 
-    private func openMainApp() {
-        guard let url = URL(string: "nuxbe://share-target") else { return }
+    /// Brings the container app forward so it picks the inbox up straight away.
+    ///
+    /// This used to walk the responder chain for a UIApplication and send it
+    /// `openURL:`, since `UIApplication.shared` is unavailable in an extension.
+    /// Recent iOS versions keep UIApplication out of an extension's responder
+    /// chain entirely, so that walk found nothing and the sheet just closed.
+    /// `NSExtensionContext.open` is the supported route.
+    private func openMainApp(completion: @escaping () -> Void) {
+        guard let context = extensionContext,
+              let url = URL(string: "nuxbe://share-target") else {
+            completion()
+            return
+        }
 
-        // UIApplication.shared is unavailable in extensions - walk the responder chain
-        var responder: UIResponder? = self
-        let selector = NSSelectorFromString("openURL:")
-
-        while let current = responder {
-            if current.responds(to: selector), current is UIApplication {
-                current.perform(selector, with: url)
-
-                return
-            }
-            responder = current.next
+        context.open(url) { _ in
+            // Whether or not the app came forward, the files are in the inbox
+            // and the app collects them the next time it becomes active.
+            DispatchQueue.main.async(execute: completion)
         }
     }
 
