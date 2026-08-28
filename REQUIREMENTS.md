@@ -197,8 +197,8 @@ flux-erp-mobile/
 │   └── style.css            # Minimal Styling
 ├── android/                 # Native Android Projekt
 ├── ios/                     # Native iOS Projekt
-├── capacitor.config.ts      # Capacitor Konfiguration
-├── vite.config.js           # Build Configuration
+├── capacitor.config.json     # Capacitor Konfiguration
+├── vite.config.mjs           # Build Configuration
 ├── package.json
 └── README.md
 ```

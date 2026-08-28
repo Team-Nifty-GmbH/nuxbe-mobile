@@ -415,8 +415,8 @@ nuxbe-mobile/
 ├── index.html              # Setup-Screen & WebView
 ├── ios/                    # Native iOS Projekt (Xcode)
 ├── android/                # Native Android Projekt (Android Studio)
-├── capacitor.config.ts     # Capacitor Konfiguration
-├── vite.config.js          # Build Konfiguration
+├── capacitor.config.json   # Capacitor Konfiguration
+├── vite.config.mjs         # Build Konfiguration
 ├── package.json            # Dependencies
 └── README.md               # Diese Datei
 ```
