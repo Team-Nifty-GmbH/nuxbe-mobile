@@ -198,10 +198,10 @@ npm run build && npm run sync:android
 npm run dev
 
 # Terminal 2: Xcode/Android Studio
-# Ändere in capacitor.config.ts:
-server: {
-  url: 'http://localhost:3000',
-  cleartext: true
+# Ändere in capacitor.config.json:
+"server": {
+  "url": "http://localhost:3000",
+  "cleartext": true
 }
 
 # Dann in Xcode/Android Studio: Run
