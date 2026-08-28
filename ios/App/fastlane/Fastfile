@@ -132,7 +132,7 @@ platform :ios do
 
     gym(
       scheme: "App",
-      workspace: "App.xcworkspace",
+      project: "App.xcodeproj",
       configuration: "Debug",
       export_method: "development",
       clean: true,
@@ -239,7 +239,7 @@ platform :ios do
 
     gym(
       scheme: "App",
-      workspace: "App.xcworkspace",
+      project: "App.xcodeproj",
       export_method: "app-store",
       clean: true,
       output_directory: "./build",

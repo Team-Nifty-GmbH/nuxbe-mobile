@@ -92,14 +92,6 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys
           echo '${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}' | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
 
-      # Capacitor runs a plain `pod install`, which resolves against whatever
-      # spec cache the runner happens to carry. That cache is shared and can
-      # predate a pod version the plugins require, which is how the v1.3.2 tag
-      # died on `OSBarcodeLib (= 2.2.0)` not being found.
-      - name: Refresh CocoaPods specs
-        working-directory: ios/App
-        run: bundle exec pod repo update
-
       # build:ios already runs `cap sync ios`, so no separate sync step.
       - name: Build web assets and sync
         run: npm run build:ios
