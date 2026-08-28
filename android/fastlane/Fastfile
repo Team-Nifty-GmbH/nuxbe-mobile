@@ -59,61 +59,71 @@ platform :android do
 
   desc "Report which version codes are still active on each Play track"
   lane :play_status do
+    require 'google/apis/androidpublisher_v3'
+    require 'googleauth'
+
     json_key = ENV['PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH']
     UI.user_error!("Set PLAY_STORE_SERVICE_ACCOUNT_JSON_PATH") if json_key.to_s.empty?
 
+    package_name = "com.teamnifty.nuxbe"
+
     # Version codes are minutes since the epoch (see the release workflow), so
     # they sort chronologically. targetSdkVersion moved 35 -> 36 on 2026-06-12,
-    # and this is the code that boundary falls on. Anything below it still
-    # targets 35 and keeps Google's "update your target API level" warning
-    # alive, whichever track it sits on.
+    # and this is the code that boundary falls on.
     target_sdk_36_since = 29_687_760
-    stale_found = false
 
-    %w[production beta alpha internal].each do |track|
-      codes = begin
-        google_play_track_version_codes(
-          package_name: "com.teamnifty.nuxbe",
-          track: track,
-          json_key: json_key,
-        )
-      rescue StandardError => e
-        # A track that was never used raises rather than returning nothing.
-        UI.message("#{track}: not readable (#{e.message})")
-        next
+    # A draft release sits on a track without ever reaching a device, so it is
+    # not what Google's target API warning is about. The fastlane helpers report
+    # version codes without their status and cannot tell the two apart, which is
+    # why this talks to the API directly.
+    serving_states = %w[completed inProgress halted]
+
+    service = Google::Apis::AndroidpublisherV3::AndroidPublisherService.new
+    service.authorization = Google::Auth::ServiceAccountCredentials.make_creds(
+      json_key_io: File.open(json_key),
+      scope: 'https://www.googleapis.com/auth/androidpublisher'
+    )
+
+    edit = service.insert_edit(package_name)
+    stale = []
+
+    begin
+      (service.list_edit_tracks(package_name, edit.id).tracks || []).each do |track|
+        releases = track.releases || []
+
+        if releases.empty?
+          UI.message("#{track.track}: no release")
+          next
+        end
+
+        releases.each do |release|
+          codes = (release.version_codes || []).map(&:to_i)
+          label = "#{track.track}: #{codes.join(', ')} (#{release.name}) status=#{release.status}"
+
+          unless serving_states.include?(release.status)
+            UI.message("#{label} - not served, ignored")
+            next
+          end
+
+          UI.message(label)
+
+          old = codes.select { |c| c < target_sdk_36_since }
+          if old.empty?
+            UI.success("  all on targetSdk 36")
+          else
+            stale.concat(old)
+            UI.important("  targetSdk 35 still served here: #{old.join(', ')}")
+          end
+        end
       end
-
-      if codes.nil? || codes.empty?
-        UI.message("#{track}: no active release")
-        next
-      end
-
-      names = begin
-        google_play_track_release_names(
-          package_name: "com.teamnifty.nuxbe",
-          track: track,
-          json_key: json_key,
-        )
-      rescue StandardError
-        []
-      end
-
-      suffix = names.empty? ? "" : " (#{names.join(', ')})"
-      UI.message("#{track}: #{codes.join(', ')}#{suffix}")
-
-      stale = codes.select { |c| c.to_i < target_sdk_36_since }
-      if stale.empty?
-        UI.success("  all on targetSdk 36")
-      else
-        stale_found = true
-        UI.important("  targetSdk 35 still active here: #{stale.join(', ')}")
-      end
+    ensure
+      service.delete_edit(package_name, edit.id)
     end
 
-    if stale_found
-      UI.important("Deactivate or supersede the releases listed above - they are what Google is warning about.")
+    if stale.empty?
+      UI.success("No track serves a targetSdk 35 release.")
     else
-      UI.success("No track carries a targetSdk 35 release.")
+      UI.important("Deactivate or supersede: #{stale.uniq.join(', ')} - they are what Google is warning about.")
     end
   end
 
