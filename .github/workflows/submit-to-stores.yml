@@ -30,6 +30,8 @@ on:
         type: choice
         options:
           - internal
+          - alpha
+          - beta
           - production
         default: internal
       submit_for_review:
