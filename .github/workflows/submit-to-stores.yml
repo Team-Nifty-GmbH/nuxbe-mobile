@@ -42,6 +42,11 @@ on:
         required: false
         type: boolean
         default: false
+      automatic_release:
+        description: 'iOS: release the version as soon as Apple approves it, instead of waiting for someone to press publish'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: submit-${{ inputs.version }}
@@ -108,6 +113,7 @@ jobs:
           APP_VERSION: ${{ inputs.version }}
           SUBMIT_FOR_REVIEW: ${{ inputs.submit_for_review }}
           SKIP_BINARY: ${{ inputs.skip_binary }}
+          AUTOMATIC_RELEASE: ${{ inputs.automatic_release }}
 
   submit-android:
     name: Submit Android

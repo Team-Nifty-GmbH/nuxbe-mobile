@@ -51,7 +51,7 @@ platform :ios do
       skip_binary_upload: skip_binary,
       app_version: app_version.empty? ? nil : app_version,
       submit_for_review: ENV['SUBMIT_FOR_REVIEW'] == 'true',
-      automatic_release: false,
+      automatic_release: ENV['AUTOMATIC_RELEASE'] == 'true',
       skip_screenshots: true,
       skip_metadata: !has_metadata,
       run_precheck_before_submit: true,
