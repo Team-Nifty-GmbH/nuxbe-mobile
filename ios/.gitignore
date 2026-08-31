@@ -1,9 +1,9 @@
 App/build
-App/Pods
 App/output
 App/App/public
 DerivedData
 xcuserdata
+App/App.xcodeproj/project.xcworkspace/xcuserdata
 
 # Cordova plugins for Capacitor
 capacitor-cordova-ios-plugins
