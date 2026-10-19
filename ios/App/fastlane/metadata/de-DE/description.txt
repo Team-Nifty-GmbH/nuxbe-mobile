@@ -1,38 +1,37 @@
-Nuxbe - Ihr mobiles ERP-System
+Nuxbe: Ihr mobiles ERP System
 
-Nuxbe bringt die Leistungsfaehigkeit Ihres ERP-Systems auf Ihr Smartphone. Verwalten Sie Ihr Unternehmen von ueberall aus - im Buero, unterwegs oder beim Kunden vor Ort.
+Nuxbe bringt die Leistungsfähigkeit Ihres ERP Systems auf Ihr Smartphone. Verwalten Sie Ihr Unternehmen von überall aus: im Büro, unterwegs oder beim Kunden vor Ort.
 
-HAUPTFUNKTIONEN:
+HAUPTFUNKTIONEN
 
-- Auftragsverwaltung
-Erstellen und bearbeiten Sie Angebote, Auftraege und Rechnungen direkt auf Ihrem Mobilgeraet. Behalten Sie den Ueberblick ueber alle Auftraege in Echtzeit.
+• Auftragsverwaltung
+Erstellen und bearbeiten Sie Angebote, Aufträge und Rechnungen direkt auf Ihrem Mobilgerät. Behalten Sie den Überblick über alle Aufträge in Echtzeit.
 
-- Kundenverwaltung
+• Kundenverwaltung
 Greifen Sie jederzeit auf Ihre Kundendaten zu. Kontaktinformationen, Auftragshistorie und Kommunikation an einem Ort.
 
-- Projektverwaltung
+• Projektverwaltung
 Verfolgen Sie Projektfortschritte, erfassen Sie Arbeitszeiten und dokumentieren Sie Projektdetails direkt vor Ort.
 
-- Lagerverwaltung
-Pruefen Sie Lagerbestaende, buchen Sie Warenbewegungen und behalten Sie Ihre Artikel im Blick.
+• Lagerverwaltung
+Prüfen Sie Lagerbestände, buchen Sie Warenbewegungen und behalten Sie Ihre Artikel im Blick.
 
-- Zeiterfassung
+• Zeiterfassung
 Erfassen Sie Arbeitszeiten mobil und ordnen Sie diese direkt Projekten oder Kunden zu.
 
-- Dokumentenverwaltung
-Greifen Sie direkt von Ihrem Mobilgeraet auf wichtige Dokumente und Dateien zu.
+• Dokumentenverwaltung
+Greifen Sie direkt von Ihrem Mobilgerät auf wichtige Dokumente und Dateien zu.
 
-VORTEILE:
+VORTEILE
 
-- Mobiler Zugriff auf Ihr komplettes ERP-System
-- Intuitive Bedienung, optimiert fuer Smartphones
-- Echtzeitdaten und automatische Synchronisation
-- Sicher und DSGVO-konform
-- Perfekt fuer Aussendienst und mobile Teams
+• Mobiler Zugriff auf Ihr komplettes ERP System
+• Intuitive Bedienung, optimiert für Smartphones
+• Echtzeitdaten und automatische Synchronisation
+• Sicher und konform mit der DSGVO
+• Ideal für Außendienst und mobile Teams
 
-UEBER NUXBE:
+ÜBER NUXBE
 
-Nuxbe ist ein umfassendes ERP-System, das speziell fuer moderne Geschaeftsprozesse entwickelt wurde. Die mobile App bietet nahtlosen Zugriff auf Ihre Unternehmensdaten von unterwegs. Von Team Nifty GmbH - Ihrem Partner fuer professionelle Business-Software.
+Nuxbe ist ein umfassendes ERP System, das speziell für moderne Geschäftsprozesse entwickelt wurde. Die mobile App bietet nahtlosen Zugriff auf Ihre Unternehmensdaten von unterwegs. Von der Team Nifty GmbH, Ihrem Partner für professionelle Business Software.
 
-Diese App erfordert ein bestehendes Nuxbe ERP Konto. Kontaktieren Sie uns fuer weitere Informationen ueber Lizenzierung und Implementierung.
-
+Diese App erfordert ein bestehendes Nuxbe ERP Konto. Kontaktieren Sie uns für weitere Informationen über Lizenzierung und Einführung.
