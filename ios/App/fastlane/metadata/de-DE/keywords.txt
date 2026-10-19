@@ -1,1 +1,1 @@
-ERP,business,orders,customers,CRM,projects,inventory,time tracking,enterprise,management
+Aufträge,Angebote,Rechnungen,Kunden,CRM,Projekte,Lager,Zeiterfassung,Warenwirtschaft,Außendienst
