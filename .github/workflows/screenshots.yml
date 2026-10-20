@@ -10,7 +10,7 @@ env:
 jobs:
   screenshots:
     name: Generate App Store Screenshots
-    runs-on: [self-hosted, Linux]
+    runs-on: ubuntu-latest
 
     services:
       mysql:
