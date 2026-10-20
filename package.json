@@ -48,7 +48,7 @@
   "devDependencies": {
     "@capacitor/cli": "^8.5.0",
     "playwright": "^1.62.1",
-    "sharp": "^0.35.4",
+    "sharp": "^0.35.5",
     "vite": "^8.2.2"
   }
 }
