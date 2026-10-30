@@ -23,6 +23,7 @@
 		D9E1D4582DEA013C38C246DB /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A40CEDD11AAF3995010A528 /* ShareViewController.swift */; };
 		DE592A8D6F192D4E1202F374 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1FEB69FE0F92F6AFB6FF2B0 /* Foundation.framework */; };
 		NUXBE0001 /* NuxbeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = NUXBE0002 /* NuxbeViewController.swift */; };
+		NUXBE0003 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = NUXBE0004 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +79,7 @@
 		APPUITESTS006 /* AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1FEB69FE0F92F6AFB6FF2B0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		NUXBE0002 /* NuxbeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NuxbeViewController.swift; sourceTree = "<group>"; };
+		NUXBE0004 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,6 +151,7 @@
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
 				504EC3131FED79650016851F /* Info.plist */,
+				NUXBE0004 /* PrivacyInfo.xcprivacy */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
 			);
@@ -302,6 +305,7 @@
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
 				99D2A7C42EB65C62004BF8F4 /* GoogleService-Info.plist in Resources */,
+				NUXBE0003 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
