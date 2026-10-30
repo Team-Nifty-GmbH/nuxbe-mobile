@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# MainActivity reaches the Capacitor JS injector by reflection
+-keepclassmembers class com.getcapacitor.Bridge { *** getJSInjector(); }
+-keepclassmembers class com.getcapacitor.JSInjector { *** getScriptString(); }
