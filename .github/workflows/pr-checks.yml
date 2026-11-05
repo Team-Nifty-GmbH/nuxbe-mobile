@@ -2,6 +2,7 @@ name: PR Checks
 
 on:
   pull_request:
+    paths-ignore: ['**.md', 'docs/**', 'LICENSE']
     branches: [main]
 
 concurrency:
